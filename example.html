@@ -3,19 +3,22 @@
   <title>SAFE Web App Sample</title>
   <script src="./lib/index.js"></script>
   <script>
-    var safe = new Safe();
+    Safe.log = console.log.bind(console);
+
+    var safe = new Safe({
+      id: 'com.samp-company.web',
+      name: 'Raw Safe API Example',
+      vendor: 'Sample-Company',
+      version: '0.1'
+    });
 
     function authorize() {
       var resultArea = document.getElementById('authorizeArea');
 
-      safe.authorize({
-        id: 'com.samp-company.web',
-        name: 'Raw Safe API Example',
-        vendor: 'Sample-Company',
-        version: '0.1'
-      }).then(function() {
+      safe.authenticate().then(function() {
         resultArea.innerHTML = 'Authorized successfully.';
       }, function(response) {
+        console.log('response', response);
         response.text().then(function(message) {
           console.log(response.status, message);
           resultArea.innerHTML = 'authorize Failed: \n status: ' + response.status + '\n Msg: ' + message;
@@ -31,18 +34,18 @@
       });
     }
 
-    function unauthorize() {
-      var unauthorizeArea = document.getElementById('unauthorizeArea');
+    function deauthorize() {
+      var deauthorizeArea = document.getElementById('deauthorizeArea');
 
-      safe.unauthorize().then(function() {
-        unauthorizeArea.innerHTML = 'Unauthorized.';
+      safe.deauthorize().then(function() {
+        deauthorizeArea.innerHTML = 'Unauthorized.';
       }, function(error) {
-        unauthorizeArea.innerHTML = error.message;
+        console.log(error);
+        deauthorizeArea.innerHTML = error.message;
       });
     }
 
     function getLongNames() {
-      console.log('getting long names');
       var longNameArea = document.getElementById('longNamesArea');
 
       safe.getLongNames().then(function(names) {
@@ -84,9 +87,9 @@
   <p><input type="text" id="createLongNameBox" /> <button type="button" onClick="createLongName()">Create Long Name</button></p>
   <p id="createLongNamesArea"></p>
 
-  <h3>Unauthorize</h3>
-  <p><button type="button" onClick="unauthorize()">Unauthorize</button></p>
-  <p id="unauthorizeArea"></p>
+  <h3>Deauthorize</h3>
+  <p><button type="button" onClick="deauthorize()">Deauthorize</button></p>
+  <p id="deauthorizeArea"></p>
 
 </body>
 </html>
