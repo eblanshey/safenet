@@ -13,58 +13,51 @@
     });
 
     function authorize() {
-      var resultArea = document.getElementById('authorizeArea');
+      var responseArea = document.getElementById('authorizeArea');
 
       safe.authenticate().then(function() {
-        resultArea.innerHTML = 'Authorized successfully.';
-      }, function(response) {
-        console.log('response', response);
-        response.text().then(function(message) {
-          console.log(response.status, message);
-          resultArea.innerHTML = 'authorize Failed: \n status: ' + response.status + '\n Msg: ' + message;
-        })
-      });
+        responseArea.innerHTML = 'Authorized successfully.';
+      }, addError.bind(null, responseArea));
     }
 
     function isAuthorized() {
-      var longNameArea = document.getElementById('isAuthorizedArea');
+      var responseArea = document.getElementById('isAuthorizedArea');
 
       safe.isAuthorized().then(function(bool) {
-        longNameArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
-      });
+        responseArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
+      }, addError.bind(null, responseArea));
     }
 
     function deauthorize() {
-      var deauthorizeArea = document.getElementById('deauthorizeArea');
+      var responseArea = document.getElementById('deauthorizeArea');
 
       safe.deauthorize().then(function() {
-        deauthorizeArea.innerHTML = 'Unauthorized.';
-      }, function(error) {
-        console.log(error);
-        deauthorizeArea.innerHTML = error.message;
-      });
+        responseArea.innerHTML = 'Unauthorized.';
+      }, addError.bind(null, responseArea));
     }
 
     function getLongNames() {
-      var longNameArea = document.getElementById('longNamesArea');
+      var responseArea = document.getElementById('longNamesArea');
 
       safe.getLongNames().then(function(names) {
-        longNameArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
-      }, function(error) {
-        longNameArea.innerHTML = error.message;
-      });
+        responseArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
+      }, addError.bind(null, responseArea));
     }
 
     function createLongName() {
       var longName = document.getElementById('createLongNameBox').value;
-      var createLongNamesArea = document.getElementById('createLongNamesArea');
+      var responseArea = document.getElementById('createLongNamesArea');
       console.log('creating long name', longName);
 
       safe.createLongName(longName).then(function() {
-        createLongNamesArea.innerHTML = 'Created new long name. Use the section above to check it out.';
-      }, function(error) {
-        createLongNamesArea.innerHTML = error.message;
-      });
+        responseArea.innerHTML = 'Created new long name. Use the section above to check it out.';
+      }, addError.bind(null, responseArea));
+    }
+
+    function addError(element, error) {
+      console.log(error.toString());
+
+      element.innerHTML = error.message;
     }
   </script>
 </head>
