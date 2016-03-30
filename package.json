@@ -5,8 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "preinstall": "npm run build",
-    "start": "webpack ./index.js ./lib/index.js --progress --colors --watch",
-    "build": "webpack ./index.js ./lib/index.js -p",
+    "start": "webpack ./src/index.js ./lib/index.js --progress --colors --watch",
+    "build": "webpack ./src/index.js ./lib/index.js -p",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
