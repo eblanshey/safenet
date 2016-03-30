@@ -15,7 +15,7 @@
     function authorize() {
       var responseArea = document.getElementById('authorizeArea');
 
-      safe.authenticate().then(function() {
+      safe.auth.authenticate().then(function() {
         responseArea.innerHTML = 'Authorized successfully.';
       }, addError.bind(null, responseArea));
     }
@@ -23,7 +23,7 @@
     function isAuthorized() {
       var responseArea = document.getElementById('isAuthorizedArea');
 
-      safe.isAuthorized().then(function(bool) {
+      safe.auth.isAuthorized().then(function(bool) {
         responseArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
       }, addError.bind(null, responseArea));
     }
@@ -31,7 +31,7 @@
     function deauthorize() {
       var responseArea = document.getElementById('deauthorizeArea');
 
-      safe.deauthorize().then(function() {
+      safe.auth.deauthorize().then(function() {
         responseArea.innerHTML = 'Unauthorized.';
       }, addError.bind(null, responseArea));
     }
@@ -39,7 +39,7 @@
     function getLongNames() {
       var responseArea = document.getElementById('longNamesArea');
 
-      safe.getLongNames().then(function(names) {
+      safe.dns.getLongNames().then(function(names) {
         responseArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
       }, addError.bind(null, responseArea));
     }
@@ -49,7 +49,7 @@
       var responseArea = document.getElementById('createLongNamesArea');
       console.log('creating long name', longName);
 
-      safe.createLongName(longName).then(function() {
+      safe.dns.createLongName(longName).then(function() {
         responseArea.innerHTML = 'Created new long name. Use the section above to check it out.';
       }, addError.bind(null, responseArea));
     }
