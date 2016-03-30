@@ -1,6 +1,3 @@
-var nacl = require('tweetnacl'),
-    base64 = require('base64-js');
-
 var Request = require('./request.js').Factory,
     storage = require('./storage.js');
 

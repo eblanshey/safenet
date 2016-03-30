@@ -118,10 +118,7 @@ function prepareResponse(response) {
       }
 
       // Otherwise, decrypt response
-      var encryptedData = base64.toByteArray(text);
-      var decrypted = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
-
-      return parseJson(atob(decrypted));
+      return decrypt.call(this, text);
     } else {
       // If authentication was requested, then decrypt the message received.
       if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
