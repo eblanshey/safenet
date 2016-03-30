@@ -102,38 +102,52 @@ Request.prototype.execute = function() {
 
   // Send request, check status, get response data, and decrypt if necessary
   return fetch(Request.baseUrl + this.uri, payload)
-    .then(checkStatus.bind(this), networkError.bind(this))
-    .then(prepareResponse.bind(this), safeError.bind(this))
-    .catch(genericError.bind(this));
+    .then(prepareResponse.bind(this), networkError.bind(this))
+    .catch(genericError.bind(this))
+}
+
+// If request was with auth token, returned data is encrypted, otherwise it's plain ol' json
+function prepareResponse(response) {
+  return response.text().then(function(text) {
+    // If we get a 2xx...
+    Safe.log('Launcher returned status '+response.status);
+    if (response.ok) {
+      // If not an authorized request, or not encrypted, no decryption necessary
+      if (!this._needAuth || doNoDecrypt.indexOf(text) > -1) {
+        return parseJson(text);
+      }
+
+      // Otherwise, decrypt response
+      var encryptedData = base64.toByteArray(text);
+      var decrypted = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
+
+      return parseJson(atob(decrypted));
+    } else {
+      // If authentication was requested, then decrypt the message received.
+      if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
+        var status = response.status;
+        var message = decrypt.call(this, text);
+
+        // Sometimes the message returns is an object with a 'description' and errorCode property
+        if (typeof message === 'object') {
+          status = message.errorCode;
+          message = message.description;
+        }
+
+        // Throw a "launcher" error type, which is an error from the launcher.
+        throw new SafeError('launcher', message, status, response);
+      } else {
+        // If no message received, it's a standard http response error
+        throw new SafeError('http', text, response.status, response);
+      }
+    }
+  }.bind(this));
 }
 
 // If the server could not be reached at all, this function is used to handle the error.
+// Non-2xx responses get handled like normal by prepareResponse()
 function networkError(response) {
-  throw (new SafeError('network', 'could not connect to SAFE launcher', 0));
-}
-
-// If the server COULD be reached but we didn't get a 2xx, handle the error here
-function safeError(response) {
-  if (response.isSafeError) throw response;
-
-  return response.text().then(function(text) {
-    // If authentication was requested, then decrypt the message received.
-    if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
-      var encryptedData = base64.toByteArray(text)
-      var message = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
-      message = JSON.parse(atob(message));
-
-      // Sometimes the message returns is an object with a 'description' property
-      if (typeof message === 'object') {
-        text = message.description;
-        code = message.code;
-      }
-
-      throw (new SafeError('client', text, code, response));
-    } else {
-      throw (new SafeError('http', text, response.status, response));
-    }
-  }.bind(this));
+  throw (new SafeError('network', 'Could not connect to SAFE launcher'));
 }
 
 // Any other kind of error gets handled here
@@ -143,44 +157,24 @@ function genericError(error) {
   throw (new SafeError('error', error.message, 0));
 }
 
-// If request was with auth token, returned data is encrypted, otherwise it's plain ol' json
-function prepareResponse(response) {
-  return response.text().then(function(text) {
-    // If not an authorized request, or not encrypted, no decryption necessary
-    if (!this._needAuth || doNoDecrypt.indexOf(text) > -1) {
-      return parseJson(text);
-    }
-
-    var encryptedData = base64.toByteArray(text);
-    var decrypted = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
-
-    return JSON.parse(atob(decrypted));
-  }.bind(this));
-}
-
-// Fetch resolves promise even on non 2xx responses. If we received a 2xx, return response as is.
-// If we received an error, then resolve with a response that has the body already decrypted, for convenience.
-function checkStatus(response) {
-  if (response.ok) {
-    Safe.log('Response OK.');
-    return Promise.resolve(response)
-  } else {
-    Safe.log('Response not ok, got status: ', response.status);
-    return Promise.reject(response);
-  }
-}
-
 function SafeError(type, message, status, response) {
   this.isSafeError = true;
 
   this.type = type;
   this.message = message;
-  this.status = status;
+  this.status = status || 0;
   this.response = response;
 
   this.toString = function() {
-    return this.type+' error: '+this.message+' ('+this.status+')';
+    return this.type+': '+this.message+' ('+this.status+')';
   }
+}
+
+function decrypt(text) {
+  var encryptedData = base64.toByteArray(text);
+  var message = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
+
+  return parseJson(atob(message));
 }
 
 /**
