@@ -41,11 +41,14 @@ function Safe(app, permissions, conf) {
   Safe.log('Instantiated new Safe instance.');
 }
 
+// Set up logging capability that can be overridden by the useur
 Safe.log = function() {}
-Safe.prototype.log = function(asdf) {
+// Make it accessible from the Safe instance
+Safe.prototype.log = function() {
   this.constructor.log.apply(this, arguments);
 }
 
+// Helper to get auth data
 Safe.prototype.getAuth = function(key) {
   return !key ? this._auth : this._auth[key];
 }
@@ -138,7 +141,6 @@ Safe.prototype.isAuthorized = function() {
       if (response.status === 401) {
         // Remove any auth from storage and Request class
         Safe.log('Not authorized, removing any stored auth data.');
-        this.storage.clear();
         clearAuthData.call(this);
 
         // Return false

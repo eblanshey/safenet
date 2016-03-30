@@ -4,8 +4,8 @@ module.exports = {
     set: function(string) {
       localStorage.setItem('auth', string);
     },
-    get: function(string) {
-      localStorage.getItem('auth');
+    get: function() {
+      return localStorage.getItem('auth');
     },
     clear: function() {
       localStorage.removeItem('auth');
