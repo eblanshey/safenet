@@ -138,6 +138,119 @@
     }
   </script>
 
+  <h2><u>NFS</u></h2>
+
+  <h4>Create Directory</h4>
+  <input type="text" id="createDirectory" placeholder="Directory"/>
+  <button type="button" onClick="createDirectory()">Create Directory</button>
+  <p id="createDirectoryArea"></p>
+  <script>
+    function createDirectory() {
+      var responseArea = document.getElementById('createDirectoryArea'),
+          createDirectory = document.getElementById('createDirectory').value;
+
+      safe.nfs.createDirectory(createDirectory, {
+        isPrivate: false,
+        metadata: btoa('some meta data was put here'),
+        isVersioned: true,
+        isPathShared: true
+      }).then(function(res) {
+        console.log('Create dir response: ', res);
+        responseArea.innerHTML = 'Created directory.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Get Directory</h4>
+  <input type="text" id="getDirectory" placeholder="Directory"/>
+  <button type="button" onClick="getDirectory()">Get Directory</button>
+  <p id="getDirectoryArea"></p>
+  <script>
+    function getDirectory() {
+      var responseArea = document.getElementById('getDirectoryArea'),
+          getDirectory = document.getElementById('getDirectory').value;
+
+      safe.nfs.getDirectory(getDirectory, {isPathShared: 'true'}).then(function(res) {
+        console.log('Get dir response: ', res);
+        res.info.metadata = atob(res.info.metadata);
+        responseArea.innerHTML = '<pre>'+JSON.stringify(res, null, 4)+'</pre>';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Delete Directory</h4>
+  <input type="text" id="deleteDirectory" placeholder="Directory"/>
+  <button type="button" onClick="deleteDirectory()">Delete Directory</button>
+  <p id="deleteDirectoryArea"></p>
+  <script>
+    function deleteDirectory() {
+      var responseArea = document.getElementById('deleteDirectoryArea'),
+          deleteDirectory = document.getElementById('deleteDirectory').value;
+
+      safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: 'true'}).then(function(res) {
+        console.log('Delete dir response: ', res);
+        responseArea.innerHTML = 'Deleted directory.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Create File</h4>
+  <input type="text" id="createFile" placeholder="File name"/>
+  <button type="button" onClick="createFile()">Create File</button>
+  <p id="createFileArea"></p>
+  <script>
+    function createFile() {
+      var responseArea = document.getElementById('createFileArea'),
+          createFile = document.getElementById('createFile').value;
+
+      safe.nfs.createFile(createFile, {
+        isPrivate: false,
+        metadata: btoa('some meta data was put here'),
+        isVersioned: true,
+        isPathShared: true
+      }).then(function(response) {
+        console.log('Create file response: ', response);
+        responseArea.innerHTML = 'Created file. Now go add content!';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Update File</h4>
+  <input type="text" id="updateFile" placeholder="File name"/><br />
+  <textarea id="updateFileContents" placeholder="Contents"></textarea><br />
+  <button type="button" onClick="updateFile()">Update File Contents</button>
+  <p id="updateFileArea"></p>
+  <script>
+    function updateFile() {
+      var responseArea = document.getElementById('updateFileArea'),
+          updateFile = document.getElementById('updateFile').value;
+          updateFileContents = document.getElementById('updateFileContents').value;
+
+      safe.nfs.updateFile(updateFile, updateFileContents, {
+        isPathShared: true
+      }).then(function(response) {
+        console.log('Update file response: ', response);
+        responseArea.innerHTML = 'Updated file. Try fetching it now.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Get File</h4>
+  <input type="text" id="getFile" placeholder="File Path"/>
+  <button type="button" onClick="getFile()">Get File</button>
+  <p id="getFileArea"></p>
+  <script>
+    function getFile() {
+      var responseArea = document.getElementById('getFileArea'),
+          getFile = document.getElementById('getFile').value;
+
+      safe.nfs.getFile(getFile, {isPathShared: 'true'}).then(function(res) {
+        console.log('Get file response: ', res);
+        responseArea.innerHTML = '<pre>'+JSON.stringify(res, null, 4)+'</pre>';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
 
 </body>
 </html>

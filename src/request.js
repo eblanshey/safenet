@@ -1,5 +1,7 @@
-var nacl = require('tweetnacl'),
+var nacl   = require('tweetnacl'),
     base64 = require('base64-js');
+
+var utils = require('./utils.js');
 
 // This is a list of plain text body responses that the SAFE client returns.
 // If the response body contains any of these, then we know that decryption is not required.
@@ -53,6 +55,7 @@ function Request(Safe, uri, method) {
   this.uri = uri;
   this.method = method;
   this._needAuth = false;
+  this._returnMeta = false;
 }
 
 // This could also just be http://localhost:8100/
@@ -69,6 +72,16 @@ Request.prototype.body = function(body) {
 // because usually authentication implies encryption.
 Request.prototype.auth = function() {
   this._needAuth = true;
+  return this;
+}
+
+/**
+ * Some requests, such as getting a file, have useful meta data in the headers that we want
+ * to keep. In those cases, return an object that has "body" and "meta" properties.
+ * @returns {Request}
+ */
+Request.prototype.returnMeta = function() {
+  this._returnMeta = true;
   return this;
 }
 
@@ -110,16 +123,25 @@ Request.prototype.execute = function() {
 
 // If request was with auth token, returned data is encrypted, otherwise it's plain ol' json
 function prepareResponse(response) {
+  Safe.log('Received response: ', response);
   return response.text().then(function(text) {
     // If we get a 2xx...
     Safe.log('Launcher returned status '+response.status);
     if (response.ok) {
       // If not an authorized request, or not encrypted, no decryption necessary
       if (!this._needAuth || doNoDecrypt.indexOf(text) > -1)
-        return parseJson(text);
+        var body = utils.parseJson(text);
 
       // Otherwise, decrypt response
-      return decrypt.call(this, text);
+      else
+        var body = decrypt.call(this, text);
+
+      // Lastly, if any meta data was requested (e.g. the headers), then return an object
+      if (this._returnMeta) {
+        return {body: body, meta: response.headers.entries()};
+      } else {
+        return body;
+      }
     } else {
       // If authentication was requested, then decrypt the error message received.
       if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
@@ -172,39 +194,12 @@ function decrypt(text) {
   var encryptedData = base64.toByteArray(text);
   var message = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
 
-  return parseJson(atob(message));
+  return utils.parseJson(atob(message));
 }
 
 function encrypt(text) {
-  var encrypted = nacl.secretbox(encodeUTF8(text), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
+  var encrypted = nacl.secretbox(utils.encodeUTF8(text), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
   return base64.fromByteArray(encrypted);
 }
-
-/**
- * Return parsed JSON if needed, otherwise returns text as is.
- * @source http://stackoverflow.com/a/20392392/371699
- * @param text
- */
-function parseJson(text) {
-  try {
-    var o = JSON.parse(text);
-    if (o && typeof o === "object" && o !== null)
-      return o;
-  }
-  catch (e) {}
-
-  return text;
-}
-
-/**
- * @param s
- * @returns {Uint8Array}
- * @source https://github.com/dchest/tweetnacl-util-js/blob/master/nacl-util.js#L16
- */
-function encodeUTF8(s) {
-  var i, d = unescape(encodeURIComponent(s)), b = new Uint8Array(d.length);
-  for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
-  return b;
-};
 
 module.exports.Request = Request;

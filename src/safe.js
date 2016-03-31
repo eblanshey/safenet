@@ -3,7 +3,8 @@ var Request = require('./request.js').Factory,
 
 var namespaces = {
   auth: require('./api/auth.js'),
-  dns: require('./api/dns.js')
+  dns: require('./api/dns.js'),
+  nfs: require('./api/nfs.js')
 };
 
 /**
@@ -36,6 +37,12 @@ function Safe(app, permissions, conf) {
   this.app = app;
   this.permissions = permissions;
   this.Request = new Request(this);
+
+  this._auth = {
+    token: null,
+    symKey: null,
+    symNonce: null
+  };
 
   // Bind namespace api endpoints
   bindNamespaces.call(this);

@@ -27,12 +27,10 @@ module.exports = {
     // Use the saved auth data to check if we're already authorized. If not, it will clear the stored
     // data, then proceed with new authorization.
     return this.auth.isAuthorized()
-      .catch(function (e) {
-        if (e.status === 401)
+      .then(function(result) {
+        if (result === false)
           return this.auth.authorize(this.app, this.permissions);
-
-        throw e;
-      });
+      }.bind(this));
   },
 
   authorize: function () {
@@ -72,6 +70,9 @@ module.exports = {
         // Set the auth data for future requests
         this.storage.set(utils.serialize(this._auth));
         this.log('Authorized');
+      }.bind(this), function(res) {
+        this.log('Could not authorize.');
+        this.storage.clear();
       }.bind(this));
   },
 
