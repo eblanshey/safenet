@@ -83,20 +83,22 @@ Request.prototype.execute = function() {
   if (this._body) {
     // If body is not a string, make it a string
     payload.body = typeof this._body !== 'string' ? JSON.stringify(this._body) : this._body;
+
+    // Encrypt body if needed
+    if (this._needAuth)
+      payload.body = encrypt.call(this, payload.body);
   }
 
   // Add token if requested
-  if (this._needAuth) {
-    // Even if token is null, we'll still continue, as this may be a request to check if we're
-    // authorized or not, in which case a 401 will automatically be returned.
+  // Even if token is null, we'll still continue, as this may be a request to check if we're
+  // authorized or not, in which case a 401 will automatically be returned.
+  if (this._needAuth)
     payload.headers['Authorization'] = 'Bearer ' + this.Safe.getAuth('token');
-  }
 
   // POST and PUT requests usually have a request body.
   // They should be JSON (unencrypted) or text (encrypted)
-  if (['POST', 'PUT'].indexOf(payload.method) > -1) {
+  if (['POST', 'PUT'].indexOf(payload.method) > -1)
     payload.headers['Content-Type'] = this._needAuth ? 'text/plain' : 'application/json';
-  }
 
   Safe.log('Executing request with uri "'+this.uri+'" and payload: ', payload);
 
@@ -113,14 +115,13 @@ function prepareResponse(response) {
     Safe.log('Launcher returned status '+response.status);
     if (response.ok) {
       // If not an authorized request, or not encrypted, no decryption necessary
-      if (!this._needAuth || doNoDecrypt.indexOf(text) > -1) {
+      if (!this._needAuth || doNoDecrypt.indexOf(text) > -1)
         return parseJson(text);
-      }
 
       // Otherwise, decrypt response
       return decrypt.call(this, text);
     } else {
-      // If authentication was requested, then decrypt the message received.
+      // If authentication was requested, then decrypt the error message received.
       if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
         var status = response.status;
         var message = decrypt.call(this, text);
@@ -174,6 +175,11 @@ function decrypt(text) {
   return parseJson(atob(message));
 }
 
+function encrypt(text) {
+  var encrypted = nacl.secretbox(encodeUTF8(text), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
+  return base64.fromByteArray(encrypted);
+}
+
 /**
  * Return parsed JSON if needed, otherwise returns text as is.
  * @source http://stackoverflow.com/a/20392392/371699
@@ -189,5 +195,16 @@ function parseJson(text) {
 
   return text;
 }
+
+/**
+ * @param s
+ * @returns {Uint8Array}
+ * @source https://github.com/dchest/tweetnacl-util-js/blob/master/nacl-util.js#L16
+ */
+function encodeUTF8(s) {
+  var i, d = unescape(encodeURIComponent(s)), b = new Uint8Array(d.length);
+  for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
+  return b;
+};
 
 module.exports.Request = Request;

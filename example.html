@@ -10,49 +10,10 @@
       name: 'Raw Safe API Example',
       vendor: 'Sample-Company',
       version: '0.1'
-    });
+    }, ['SAFE_DRIVE_ACCESS']);
 
-    function authorize() {
-      var responseArea = document.getElementById('authorizeArea');
-
-      safe.auth.authenticate().then(function() {
-        responseArea.innerHTML = 'Authorized successfully.';
-      }, addError.bind(null, responseArea));
-    }
-
-    function isAuthorized() {
-      var responseArea = document.getElementById('isAuthorizedArea');
-
-      safe.auth.isAuthorized().then(function(bool) {
-        responseArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
-      }, addError.bind(null, responseArea));
-    }
-
-    function deauthorize() {
-      var responseArea = document.getElementById('deauthorizeArea');
-
-      safe.auth.deauthorize().then(function() {
-        responseArea.innerHTML = 'Unauthorized.';
-      }, addError.bind(null, responseArea));
-    }
-
-    function getLongNames() {
-      var responseArea = document.getElementById('longNamesArea');
-
-      safe.dns.getLongNames().then(function(names) {
-        responseArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
-      }, addError.bind(null, responseArea));
-    }
-
-    function createLongName() {
-      var longName = document.getElementById('createLongNameBox').value;
-      var responseArea = document.getElementById('createLongNamesArea');
-      console.log('creating long name', longName);
-
-      safe.dns.createLongName(longName).then(function() {
-        responseArea.innerHTML = 'Created new long name. Use the section above to check it out.';
-      }, addError.bind(null, responseArea));
-    }
+    // Automatically try to authenticate
+    safe.auth.authenticate();
 
     function addError(element, error) {
       console.log(error.toString());
@@ -64,25 +25,119 @@
 <body>
   <h1>Raw Safe API</h1>
 
-  <h3>Authorize</h3>
+  <h2><u>Auth</u></h2>
+
+  <h4>Authorize</h4>
   <p><button type="button" onClick="authorize()">Authorize</button></p>
   <p id="authorizeArea"></p>
+  <script>
+    function authorize() {
+      var responseArea = document.getElementById('authorizeArea');
 
-  <h3>Am I Authorized?</h3>
+      safe.auth.authenticate().then(function() {
+        responseArea.innerHTML = 'Authorized successfully.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Am I Authorized?</h4>
   <p><button type="button" onClick="isAuthorized()">Am I Authorized?</button></p>
   <p id="isAuthorizedArea"></p>
+  <script>
+    function isAuthorized() {
+      var responseArea = document.getElementById('isAuthorizedArea');
 
-  <h3>Get Long Names</h3>
-  <p><button type="button" onClick="getLongNames()">Get Long Names</button></p>
-  <p id="longNamesArea"></p>
+      safe.auth.isAuthorized().then(function(bool) {
+        responseArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
 
-  <h3>Create Long Name</h3>
-  <p><input type="text" id="createLongNameBox" /> <button type="button" onClick="createLongName()">Create Long Name</button></p>
-  <p id="createLongNamesArea"></p>
-
-  <h3>Deauthorize</h3>
+  <h4>Deauthorize</h4>
   <p><button type="button" onClick="deauthorize()">Deauthorize</button></p>
   <p id="deauthorizeArea"></p>
+  <script>
+    function deauthorize() {
+      var responseArea = document.getElementById('deauthorizeArea');
+
+      safe.auth.deauthorize().then(function() {
+        responseArea.innerHTML = 'Unauthorized.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h2><u>DNS</u></h2>
+
+  <h4>Get Long Names</h4>
+  <p><button type="button" onClick="getLongNames()">Get Long Names</button></p>
+  <p id="longNamesArea"></p>
+  <script>
+    function getLongNames() {
+      var responseArea = document.getElementById('longNamesArea');
+
+      safe.dns.getLongNames().then(function(names) {
+        responseArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Create Long Name</h4>
+  <p><input type="text" id="createLongNameBox" /> <button type="button" onClick="createLongName()">Create Long Name</button></p>
+  <p id="createLongNamesArea"></p>
+  <script>
+    function createLongName() {
+      var longName = document.getElementById('createLongNameBox').value;
+      var responseArea = document.getElementById('createLongNamesArea');
+      console.log('creating long name', longName);
+
+      safe.dns.createLongName(longName).then(function() {
+        responseArea.innerHTML = 'Created new long name. Use the section above to check it out.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Create Service</h4>
+  <p>
+    <input type="text" id="createServiceBoxLongName" placeholder="Long Name"/><br/>
+    <input type="text" id="createServiceBoxServiceName" placeholder="Service Name"/><br/>
+    <input type="text" id="createServiceBoxDir" placeholder="Directory Name"/><br/>
+    <button type="button" onClick="createService()">Create Service</button>
+  </p>
+  <p id="createServiceArea"></p>
+  <script>
+    function createService() {
+      var payload = {
+        longName: document.getElementById('createServiceBoxLongName').value,
+        serviceName: document.getElementById('createServiceBoxServiceName').value,
+        serviceHomeDirPath: document.getElementById('createServiceBoxServiceName').value,
+        isPathShared: true // because why not
+      };
+      var responseArea = document.getElementById('createServiceArea');
+      console.log('creating new service', payload);
+
+      safe.dns.createService(payload).then(function() {
+        responseArea.innerHTML = 'Created new service.';
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
+  <h4>Get Service Directory</h4>
+  <input type="text" id="getServiceDirectoryServiceName" placeholder="Service Name"/><br/>
+  <input type="text" id="getServiceDirectoryLongName" placeholder="Long Name"/><br/>
+  <button type="button" onClick="getServiceDir()">Get Service Directory</button>
+  <p id="getServiceDirArea"></p>
+  <script>
+    function getServiceDir() {
+      var responseArea = document.getElementById('getServiceDirArea'),
+          longName = document.getElementById('getServiceDirectoryLongName').value,
+          serviceName = document.getElementById('getServiceDirectoryServiceName').value;
+
+      safe.dns.getServiceDir(serviceName, longName).then(function(dir) {
+        responseArea.innerHTML = 'Directory: '+dir;
+      }, addError.bind(null, responseArea));
+    }
+  </script>
+
 
 </body>
 </html>
