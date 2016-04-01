@@ -30,6 +30,10 @@ module.exports = {
 
   getFile: function(file, options) {
     return this.Request.get('/nfs/file/'+encodeURIComponent(file)+'/'+encodeURIComponent(options.isPathShared)).auth().execute();
+  },
+
+  deleteFile: function(file, options) {
+    return this.Request.delete('/nfs/file/'+encodeURIComponent(file)+'/'+encodeURIComponent(options.isPathShared)).auth().execute();
   }
 
 

@@ -50,8 +50,8 @@ function Safe(app, permissions, conf) {
   Safe.log('Instantiated new Safe instance.');
 }
 
-// All we're doing here is A) namespacing api calls (e.g. call using Safe.dns.getLongName() vs
-// Safe.getLongName(), and B) binding "this" within each api call to the main Safe object
+// All we're doing here is A) namespacing api calls (e.g. call using Safe.dns.getName() vs
+// Safe.getName(), and B) binding "this" within each api call to the main Safe object
 function bindNamespaces() {
   for (var namespace in namespaces) {
     for (var func in namespaces[namespace]) {

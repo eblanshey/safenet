@@ -20,236 +20,376 @@
 
       element.innerHTML = error.message;
     }
+
+    function showSource(node) {
+      var source = node.parentNode.previousElementSibling.innerText;
+      node.parentNode.innerHTML = '<pre>' + source + '</pre>';
+    }
   </script>
+
+  <style>
+    .source-link {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>Raw Safe API</h1>
+<h1>Raw Safe API</h1>
 
-  <h2><u>Auth</u></h2>
+<h2><u>Auth</u></h2>
 
+<div>
   <h4>Authorize</h4>
-  <p><button type="button" onClick="authorize()">Authorize</button></p>
+
+  <p>
+    <button type="button" onClick="authorize(this)">Authorize</button>
+  </p>
   <p id="authorizeArea"></p>
   <script>
-    function authorize() {
-      var responseArea = document.getElementById('authorizeArea');
-
+    function authorize(node) {
       safe.auth.authenticate().then(function() {
-        responseArea.innerHTML = 'Authorized successfully.';
-      }, addError.bind(null, responseArea));
+        node.parentNode.nextElementSibling.innerHTML = 'Authorized successfully.';
+      }, addError.bind(null, node.nextElementSibling));
     }
   </script>
+  <div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+</div>
 
-  <h4>Am I Authorized?</h4>
-  <p><button type="button" onClick="isAuthorized()">Am I Authorized?</button></p>
-  <p id="isAuthorizedArea"></p>
-  <script>
-    function isAuthorized() {
-      var responseArea = document.getElementById('isAuthorizedArea');
+<h4>Am I Authorized?</h4>
 
-      safe.auth.isAuthorized().then(function(bool) {
-        responseArea.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+<p>
+  <button type="button" onClick="isAuthorized(this)">Am I Authorized?</button>
+</p>
+<p id="isAuthorizedArea"></p>
+<script class="source">
+  function isAuthorized(node) {
+    safe.auth.isAuthorized().then(function(bool) {
+      node.parentNode.nextElementSibling.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Deauthorize</h4>
-  <p><button type="button" onClick="deauthorize()">Deauthorize</button></p>
-  <p id="deauthorizeArea"></p>
-  <script>
-    function deauthorize() {
-      var responseArea = document.getElementById('deauthorizeArea');
+<h4>Deauthorize</h4>
 
-      safe.auth.deauthorize().then(function() {
-        responseArea.innerHTML = 'Unauthorized.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+<p>
+  <button type="button" onClick="deauthorize(this)">Deauthorize</button>
+</p>
+<p id="deauthorizeArea"></p>
+<script class="source">
+  function deauthorize(node) {
+    safe.auth.deauthorize().then(function() {
+      node.parentNode.nextElementSibling.innerHTML = 'Unauthorized.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h2><u>DNS</u></h2>
+<h2><u>DNS</u></h2>
 
-  <h4>Get Long Names</h4>
-  <p><button type="button" onClick="getLongNames()">Get Long Names</button></p>
-  <p id="longNamesArea"></p>
-  <script>
-    function getLongNames() {
-      var responseArea = document.getElementById('longNamesArea');
+<h4>List Names</h4>
 
-      safe.dns.getLongNames().then(function(names) {
-        responseArea.innerHTML = names.length > 0 ? names.join(', ') : 'No long names found.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+<p>
+  <button type="button" onClick="getNames(this)">List Names</button>
+</p>
+<p id="namesArea"></p>
+<script class="source">
+  function getNames(node) {
+    safe.dns.listNames().then(function(names) {
+      node.parentNode.nextElementSibling.innerHTML = names.length > 0 ? names.join(', ') : 'No names found.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Create Long Name</h4>
-  <p><input type="text" id="createLongNameBox" /> <button type="button" onClick="createLongName()">Create Long Name</button></p>
-  <p id="createLongNamesArea"></p>
-  <script>
-    function createLongName() {
-      var longName = document.getElementById('createLongNameBox').value;
-      var responseArea = document.getElementById('createLongNamesArea');
-      console.log('creating long name', longName);
+<h4>Create Name</h4>
 
-      safe.dns.createLongName(longName).then(function() {
-        responseArea.innerHTML = 'Created new long name. Use the section above to check it out.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+<p>
+  <input type="text" id="createNameBox" placeholder="Name"/>
+  <button type="button" onClick="createName(this)">Create Name</button>
+</p>
+<p id="createNamesArea"></p>
+<script class="source">
+  function createName(node) {
+    var name = document.getElementById('createNameBox').value;
 
-  <h4>Create Service</h4>
-  <p>
-    <input type="text" id="createServiceBoxLongName" placeholder="Long Name"/><br/>
-    <input type="text" id="createServiceBoxServiceName" placeholder="Service Name"/><br/>
-    <input type="text" id="createServiceBoxDir" placeholder="Directory Name"/><br/>
-    <button type="button" onClick="createService()">Create Service</button>
-  </p>
-  <p id="createServiceArea"></p>
-  <script>
-    function createService() {
-      var payload = {
-        longName: document.getElementById('createServiceBoxLongName').value,
-        serviceName: document.getElementById('createServiceBoxServiceName').value,
-        serviceHomeDirPath: document.getElementById('createServiceBoxServiceName').value,
-        isPathShared: true // because why not
-      };
-      var responseArea = document.getElementById('createServiceArea');
-      console.log('creating new service', payload);
+    safe.dns.createName(name).then(function() {
+      node.parentNode.nextElementSibling.innerHTML = 'Created new name. Use the section above to check it out.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-      safe.dns.createService(payload).then(function() {
-        responseArea.innerHTML = 'Created new service.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
 
-  <h4>Get Service Directory</h4>
+<h4>List Services For Name</h4>
+
+<p>
+  <input type="text" id="listServicesBox" placeholder="Name"/>
+  <button type="button" onClick="listServices(this)">List Services</button>
+</p>
+<p id="listServicesArea"></p>
+<script class="source">
+  function listServices(node) {
+    var name = document.getElementById('listServicesBox').value;
+
+    safe.dns.listServices(name).then(function(services) {
+      console.log('services', services);
+      node.parentNode.nextElementSibling.innerHTML = services.length > 0 ? services.join(', ') : 'No services found.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h4>Create Service For Name</h4>
+
+<p>
+  <input type="text" id="createServiceForNameBoxName" placeholder="Name"/><br/>
+  <input type="text" id="createServiceForNameBoxServiceName" placeholder="Service Name"/><br/>
+  <input type="text" id="createServiceForNameBoxDir" placeholder="Directory Name"/><br/>
+  <button type="button" onClick="createServiceForName(this)">Create Service</button>
+</p>
+<p id="createServiceForNameArea"></p>
+<script class="source">
+  function createServiceForName(node) {
+    var payload = {
+      longName: document.getElementById('createServiceForNameBoxName').value,
+      serviceName: document.getElementById('createServiceForNameBoxServiceName').value,
+      serviceHomeDirPath: document.getElementById('createServiceForNameBoxDir').value,
+      isPathShared: true // because why not
+    };
+
+    safe.dns.createServiceForName(payload).then(function() {
+      node.parentNode.nextElementSibling.innerHTML = 'Created new service for name "' + payload.longName + '".';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h4>Create Name and Service</h4>
+
+<p>
+  <input type="text" id="createServiceAndNameBoxName" placeholder="Name"/><br/>
+  <input type="text" id="createServiceAndNameBoxServiceName" placeholder="Service Name"/><br/>
+  <input type="text" id="createServiceAndNameBoxDir" placeholder="Directory Name"/><br/>
+  <button type="button" onClick="createServiceAndName(this)">Create Service</button>
+</p>
+<p id="createServiceAndNameArea"></p>
+<script class="source">
+  function createServiceAndName(node) {
+    var payload = {
+      longName: document.getElementById('createServiceAndNameBoxName').value,
+      serviceName: document.getElementById('createServiceAndNameBoxServiceName').value,
+      serviceHomeDirPath: document.getElementById('createServiceAndNameBoxDir').value,
+      isPathShared: true // because why not
+    };
+
+    safe.dns.createServiceAndName(payload).then(function() {
+      node.parentNode.nextElementSibling.innerHTML = 'Created new service and name.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h4>Get Service Directory</h4>
+
+<p>
   <input type="text" id="getServiceDirectoryServiceName" placeholder="Service Name"/><br/>
-  <input type="text" id="getServiceDirectoryLongName" placeholder="Long Name"/><br/>
-  <button type="button" onClick="getServiceDir()">Get Service Directory</button>
-  <p id="getServiceDirArea"></p>
-  <script>
-    function getServiceDir() {
-      var responseArea = document.getElementById('getServiceDirArea'),
-          longName = document.getElementById('getServiceDirectoryLongName').value,
-          serviceName = document.getElementById('getServiceDirectoryServiceName').value;
+  <input type="text" id="getServiceDirectoryName" placeholder="Name"/><br/>
+  <button type="button" onClick="getServiceDir(this)">Get Service Directory</button>
+</p>
+<p id="getServiceDirArea"></p>
+<script class="source">
+  function getServiceDir(node) {
+    var name        = document.getElementById('getServiceDirectoryName').value,
+        serviceName = document.getElementById('getServiceDirectoryServiceName').value;
 
-      safe.dns.getServiceDir(serviceName, longName).then(function(dir) {
-        responseArea.innerHTML = 'Directory: '+dir;
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.dns.getServiceDir(serviceName, name).then(function(dir) {
+      node.parentNode.nextElementSibling.innerHTML = 'Directory: <br /><pre>' + JSON.stringify(dir, null, 2) + '</pre>';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h2><u>NFS</u></h2>
+<h4>Get Service File</h4>
 
-  <h4>Create Directory</h4>
+<p>
+  <input type="text" id="getServiceFileServiceName" placeholder="Service Name"/><br/>
+  <input type="text" id="getServiceFileName" placeholder="Name"/><br/>
+  <input type="text" id="getServiceFilePath" placeholder="Path"/><br/>
+  <button type="button" onClick="getServiceFile(this)">Get Service File</button>
+</p>
+<p id="getServiceFileArea"></p>
+<script class="source">
+  function getServiceFile(node) {
+    var name        = document.getElementById('getServiceFileName').value,
+        serviceName = document.getElementById('getServiceFileServiceName').value,
+        filePath    = document.getElementById('getServiceFilePath').value;
+
+    safe.dns.getFile(serviceName, name, filePath).then(function(file) {
+      node.parentNode.nextElementSibling.innerText = '';
+
+      var p = document.createElement('div');
+      p.innerHTML = 'Raw File: <br />';
+      node.parentNode.nextElementSibling.appendChild(p);
+
+      var content = document.createElement('pre');
+      content.innerText = file;
+      node.parentNode.nextElementSibling.appendChild(content);
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h2><u>NFS</u></h2>
+
+<h4>Create Directory</h4>
+
+<p>
   <input type="text" id="createDirectory" placeholder="Directory"/>
-  <button type="button" onClick="createDirectory()">Create Directory</button>
-  <p id="createDirectoryArea"></p>
-  <script>
-    function createDirectory() {
-      var responseArea = document.getElementById('createDirectoryArea'),
-          createDirectory = document.getElementById('createDirectory').value;
+  <button type="button" onClick="createDirectory(this)">Create Directory</button>
+</p>
+<p id="createDirectoryArea"></p>
+<script class="source">
+  function createDirectory(node) {
+    var createDirectory = document.getElementById('createDirectory').value;
 
-      safe.nfs.createDirectory(createDirectory, {
-        isPrivate: false,
-        metadata: btoa('some meta data was put here'),
-        isVersioned: true,
-        isPathShared: true
-      }).then(function(res) {
-        console.log('Create dir response: ', res);
-        responseArea.innerHTML = 'Created directory.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.nfs.createDirectory(createDirectory, {
+      isPrivate: false,
+      metadata: btoa('some meta data was put here'),
+      isVersioned: true,
+      isPathShared: true
+    }).then(function(res) {
+      console.log('Create dir response: ', res);
+      node.parentNode.nextElementSibling.innerHTML = 'Created directory.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Get Directory</h4>
+<h4>Get Directory</h4>
+
+<p>
   <input type="text" id="getDirectory" placeholder="Directory"/>
-  <button type="button" onClick="getDirectory()">Get Directory</button>
-  <p id="getDirectoryArea"></p>
-  <script>
-    function getDirectory() {
-      var responseArea = document.getElementById('getDirectoryArea'),
-          getDirectory = document.getElementById('getDirectory').value;
+  <button type="button" onClick="getDirectory(this)">Get Directory</button>
+</p>
+<p id="getDirectoryArea"></p>
+<script class="source">
+  function getDirectory(node) {
+    var getDirectory = document.getElementById('getDirectory').value;
 
-      safe.nfs.getDirectory(getDirectory, {isPathShared: 'true'}).then(function(res) {
-        console.log('Get dir response: ', res);
-        res.info.metadata = atob(res.info.metadata);
-        responseArea.innerHTML = '<pre>'+JSON.stringify(res, null, 4)+'</pre>';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.nfs.getDirectory(getDirectory, {isPathShared: 'true'}).then(function(res) {
+      console.log('Get dir response: ', res);
+      res.info.metadata = atob(res.info.metadata);
+      node.parentNode.nextElementSibling.innerHTML = '<pre>' + JSON.stringify(res, null, 4) + '</pre>';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Delete Directory</h4>
+<h4>Delete Directory</h4>
+
+<p>
   <input type="text" id="deleteDirectory" placeholder="Directory"/>
-  <button type="button" onClick="deleteDirectory()">Delete Directory</button>
-  <p id="deleteDirectoryArea"></p>
-  <script>
-    function deleteDirectory() {
-      var responseArea = document.getElementById('deleteDirectoryArea'),
-          deleteDirectory = document.getElementById('deleteDirectory').value;
+  <button type="button" onClick="deleteDirectory(this)">Delete Directory</button>
+</p>
+<p id="deleteDirectoryArea"></p>
+<script class="source">
+  function deleteDirectory(node) {
+    var deleteDirectory = document.getElementById('deleteDirectory').value;
 
-      safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: 'true'}).then(function(res) {
-        console.log('Delete dir response: ', res);
-        responseArea.innerHTML = 'Deleted directory.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: 'true'}).then(function(res) {
+      console.log('Delete dir response: ', res);
+      node.parentNode.nextElementSibling.innerHTML = 'Deleted directory.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Create File</h4>
+<h4>Create File</h4>
+
+<p>
   <input type="text" id="createFile" placeholder="File name"/>
-  <button type="button" onClick="createFile()">Create File</button>
-  <p id="createFileArea"></p>
-  <script>
-    function createFile() {
-      var responseArea = document.getElementById('createFileArea'),
-          createFile = document.getElementById('createFile').value;
+  <button type="button" onClick="createFile(this)">Create File</button>
+</p>
+<p id="createFileArea"></p>
+<script class="source">
+  function createFile(node) {
+    var createFile = document.getElementById('createFile').value;
 
-      safe.nfs.createFile(createFile, {
-        isPrivate: false,
-        metadata: btoa('some meta data was put here'),
-        isVersioned: true,
-        isPathShared: true
-      }).then(function(response) {
-        console.log('Create file response: ', response);
-        responseArea.innerHTML = 'Created file. Now go add content!';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.nfs.createFile(createFile, {
+      isPrivate: false,
+      metadata: btoa('some meta data was put here'),
+      isVersioned: true,
+      isPathShared: true
+    }).then(function(response) {
+      console.log('Create file response: ', response);
+      node.parentNode.nextElementSibling.innerHTML = 'Created file. Now go add content!';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
-  <h4>Update File</h4>
-  <input type="text" id="updateFile" placeholder="File name"/><br />
-  <textarea id="updateFileContents" placeholder="Contents"></textarea><br />
-  <button type="button" onClick="updateFile()">Update File Contents</button>
-  <p id="updateFileArea"></p>
-  <script>
-    function updateFile() {
-      var responseArea = document.getElementById('updateFileArea'),
-          updateFile = document.getElementById('updateFile').value;
-          updateFileContents = document.getElementById('updateFileContents').value;
+<h4>Update File</h4>
 
-      safe.nfs.updateFile(updateFile, updateFileContents, {
-        isPathShared: true
-      }).then(function(response) {
-        console.log('Update file response: ', response);
-        responseArea.innerHTML = 'Updated file. Try fetching it now.';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+<p>
+  <input type="text" id="updateFile" placeholder="File name"/><br/>
+  <textarea id="updateFileContents" placeholder="Contents"></textarea><br/>
+  <button type="button" onClick="updateFile(this)">Update File Contents</button>
+</p>
+<p id="updateFileArea"></p>
+<script class="source">
+  function updateFile(node) {
+    var updateFile = document.getElementById('updateFile').value;
+    updateFileContents = document.getElementById('updateFileContents').value;
 
-  <h4>Get File</h4>
+    safe.nfs.updateFile(updateFile, updateFileContents, {
+      isPathShared: true
+    }).then(function(response) {
+      console.log('Update file response: ', response);
+      node.parentNode.nextElementSibling.innerHTML = 'Updated file. Try fetching it now.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h4>Get File</h4>
+
+<p>
   <input type="text" id="getFile" placeholder="File Path"/>
-  <button type="button" onClick="getFile()">Get File</button>
-  <p id="getFileArea"></p>
-  <script>
-    function getFile() {
-      var responseArea = document.getElementById('getFileArea'),
-          getFile = document.getElementById('getFile').value;
+  <button type="button" onClick="getFile(this)">Get File</button>
+</p>
+<p id="getFileArea"></p>
+<script class="source">
+  function getFile(node) {
+    var getFile = document.getElementById('getFile').value;
 
-      safe.nfs.getFile(getFile, {isPathShared: 'true'}).then(function(res) {
-        console.log('Get file response: ', res);
-        responseArea.innerHTML = '<pre>'+JSON.stringify(res, null, 4)+'</pre>';
-      }, addError.bind(null, responseArea));
-    }
-  </script>
+    safe.nfs.getFile(getFile, {isPathShared: 'true'}).then(function(res) {
+      console.log('Get file response: ', res);
+      node.parentNode.nextElementSibling.innerHTML = '<pre>' + JSON.stringify(res, null, 4) + '</pre>';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
+
+<h4>Delete File</h4>
+
+<p>
+  <input type="text" id="deleteFile" placeholder="File Path"/>
+  <button type="button" onClick="deleteFile(this)">Delete File</button>
+</p>
+<p id="deleteFileArea"></p>
+<script class="source">
+  function deleteFile(node) {
+    var deleteFile = document.getElementById('deleteFile').value;
+
+    safe.nfs.deleteFile(deleteFile, {isPathShared: 'true'}).then(function(res) {
+      console.log('Delete file response: ', res);
+      node.parentNode.nextElementSibling.innerHTML = 'Deleted.';
+    }, addError.bind(null, node.parentNode.nextElementSibling));
+  }
+</script>
+<div><span class="source-link" onclick="showSource(this)">Click For Source</span></div>
 
 
 </body>
