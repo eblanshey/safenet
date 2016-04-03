@@ -113,7 +113,7 @@ Request.prototype.execute = function() {
   if (['POST', 'PUT'].indexOf(payload.method) > -1)
     payload.headers['Content-Type'] = this._needAuth ? 'text/plain' : 'application/json';
 
-  Safe.log('Executing request with uri "'+this.uri+'" and payload: ', payload);
+  Safe.log('Executing '+payload.method+' request with uri "'+this.uri+'" and payload: ', payload);
 
   // Send request, check status, get response data, and decrypt if necessary
   return fetch(Request.baseUrl + this.uri, payload)
@@ -145,20 +145,15 @@ function prepareResponse(response) {
     } else {
       // If authentication was requested, then decrypt the error message received.
       if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
-        var status = response.status;
-        var message = decrypt.call(this, text);
-
-        // Sometimes the message returns is an object with a 'description' and errorCode property
-        if (typeof message === 'object') {
-          status = message.errorCode;
-          message = message.description;
-        }
+        var message = decrypt.call(this, text),
+            parsed = parseSafeMessage(message, response.status);
 
         // Throw a "launcher" error type, which is an error from the launcher.
-        throw new SafeError('launcher', message, status, response);
+        throw new SafeError('launcher', parsed.message, parsed.status, response);
       } else {
         // If no message received, it's a standard http response error
-        throw new SafeError('http', text, response.status, response);
+        var parsed = parseSafeMessage(utils.parseJson(text), status);
+        throw new SafeError('http', parsed.message, parsed.status, response);
       }
     }
   }.bind(this));
@@ -167,14 +162,14 @@ function prepareResponse(response) {
 // If the server could not be reached at all, this function is used to handle the error.
 // Non-2xx responses get handled like normal by prepareResponse()
 function networkError(response) {
-  throw (new SafeError('network', 'Could not connect to SAFE launcher'));
+  throw new SafeError('network', 'Could not connect to SAFE launcher. Is it running?');
 }
 
 // Any other kind of error gets handled here
 function genericError(error) {
   if (error.isSafeError) throw error;
 
-  throw (new SafeError('error', error.message, 0));
+  throw new SafeError('error', error.message, 0);
 }
 
 function SafeError(type, message, status, response) {
@@ -200,6 +195,18 @@ function decrypt(text) {
 function encrypt(text) {
   var encrypted = nacl.secretbox(utils.encodeUTF8(text), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
   return base64.fromByteArray(encrypted);
+}
+
+/**
+ * Sometimes the message returns is an object with a 'description' and 'errorCode' property
+ * @param message
+ */
+function parseSafeMessage(message, status) {
+  if (typeof message === 'object') {
+    return {status: message.errorCode, message: message.description};
+  } else {
+    return {status: status, message: message};
+  }
 }
 
 module.exports.Request = Request;

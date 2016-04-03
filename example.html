@@ -35,7 +35,6 @@
 
     $(document).ready(function() {
       // defaults
-      window.isPrivate = false;
       window.isPathShared = false;
 
       // pathShared toggle
@@ -81,10 +80,6 @@
   </script>
 
   <style>
-    body {
-      padding-top: 70px;
-    }
-
     .source-link {
       text-decoration: underline;
       cursor: pointer;
@@ -104,7 +99,7 @@
   </style>
 </head>
 <body class="language-javascript">
-<div class="navbar navbar-default navbar-fixed-top">
+<div class="navbar navbar-default">
   <div class="container">
     <div class="navbar-header">
       <a href="./example.html" class="navbar-brand">SafeNet JS</a>
@@ -119,7 +114,6 @@
     <div class="panel-body">
       <p>The following options will be used for the appropriate API calls in the playground below.</p>
       <label><input type="checkbox" id="isPathShared"> Use SAFEDrive (isPathShared)</label><br/>
-      <label><input type="checkbox" id="isPrivate"> Use Encryption (isPrivate)</label>
 
       <script>
         function showExplanation() {
@@ -127,18 +121,12 @@
         }
       </script>
       <p><a href="#" onclick="showExplanation()">Explanation</a></p>
+
       <div style="display: none" id="showExplanation">
         <p><b>Use SAFEDrive:</b> applied to DNS and NFS calls. If TRUE, all directories and files will be
-          considered as residing
-          in a public folder called "SAFEDrive". Everything here can be written and modified by any
-          application.</p>
-
-        <p><b>Use Encryption:</b> For NFS calls. If TRUE, everything in the directory, or the file, will
-          be encrypted, such that only you can read its contents. This holds true also for files that are in
-          the SAFEDrive.</p>
-
-        <p>You will notice how big a role these options play when using the playground below. Try switching
-          these options periodically to see how the API results change.</p>
+          considered as residing in a root public folder called "SAFEDrive". Everything here can be written and modified by any
+          application. If FALSE, the another default root directory is used. Files and directories created with one option are not visible
+          when the other option is toggled, so you will see how important it is to keep track of it.</p>
       </div>
     </div>
   </div>
@@ -173,8 +161,7 @@
 
           <h3>Am I Authorized?</h3>
 
-          <button type="button" class="btn btn-primary submit" onClick="isAuthorized(this)">Am I Authorized?
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="isAuthorized(this)">Am I Authorized?</button>
           <p id="isAuthorizedArea" class="result-area"></p>
           <script class="source">
             function isAuthorized(node) {
@@ -199,9 +186,7 @@
 
         <div class="tab-pane" id="dns">
           <h3>List Names</h3>
-
           <button type="button" class="btn btn-primary submit" onClick="getNames(this)">List Names</button>
-
           <p id="namesArea" class="result-area"></p>
           <script class="source">
             function getNames(node) {
@@ -212,31 +197,43 @@
           </script>
 
           <h3>Create Name</h3>
-
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" class="form-control" id="createNameBox" placeholder="Name"/>
           </div>
           <button type="button" class="btn btn-primary submit" onClick="createName(this)">Create Name</button>
-
           <p id="createNamesArea" class="result-area"></p>
           <script class="source">
             function createName(node) {
               var name = document.getElementById('createNameBox').value;
 
               safe.dns.createName(name).then(function() {
-                node.nextElementSibling.innerHTML = 'Created new name. Use the section above to check it out.';
+                node.nextElementSibling.innerHTML = 'Created new name "'+name+'".';
+              }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
+            }
+          </script>
+
+          <h3>Delete Name</h3>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" class="form-control" id="deleteNameBox" placeholder="Name"/>
+          </div>
+          <button type="button" class="btn btn-primary submit" onClick="deleteName(this)">Delete Name</button>
+
+          <p id="deleteNamesArea" class="result-area"></p>
+          <script class="source">
+            function deleteName(node) {
+              var name = document.getElementById('deleteNameBox').value;
+
+              safe.dns.deleteName(name).then(function() {
+                node.nextElementSibling.innerHTML = 'Deleted name "'+name+'".';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
 
           <h3>List Services For Name</h3>
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="listServicesBox"
-                   placeholder="Name"/>
+            <input type="text" class="form-control" class="form-control" id="listServicesBox" placeholder="Name"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="listServices(this)">List Services
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="listServices(this)">List Services</button>
           <p id="listServicesArea" class="result-area"></p>
           <script class="source">
             function listServices(node) {
@@ -249,23 +246,16 @@
           </script>
 
           <h3>Create Service For Name</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxName"
-                   placeholder="Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxName" placeholder="Name"/>
           </div>
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control"
-                   id="createServiceForNameBoxServiceName" placeholder="Service Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxServiceName" placeholder="Service Name"/>
           </div>
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxDir"
-                   placeholder="Directory Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxDir" placeholder="Directory Name"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="createServiceForName(this)">Create
-            Service
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="createServiceForName(this)">Create Service</button>
           <p id="createServiceForNameArea" class="result-area"></p>
           <script class="source">
             function createServiceForName(node) {
@@ -273,7 +263,7 @@
                 longName: document.getElementById('createServiceForNameBoxName').value,
                 serviceName: document.getElementById('createServiceForNameBoxServiceName').value,
                 serviceHomeDirPath: document.getElementById('createServiceForNameBoxDir').value,
-                isPathShared: true // because why not
+                isPathShared: window.isPathShared
               };
 
               safe.dns.createServiceForName(payload).then(function() {
@@ -283,23 +273,16 @@
           </script>
 
           <h3>Create Name and Service</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxName"
-                   placeholder="Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxName" placeholder="Name"/>
           </div>
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control"
-                   id="createServiceAndNameBoxServiceName" placeholder="Service Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxServiceName" placeholder="Service Name"/>
           </div>
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxDir"
-                   placeholder="Directory Name"/>
+            <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxDir" placeholder="Directory Name"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="createServiceAndName(this)">Create
-            Service
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="createServiceAndName(this)">Create Service</button>
           <p id="createServiceAndNameArea" class="result-area"></p>
           <script class="source">
             function createServiceAndName(node) {
@@ -307,7 +290,7 @@
                 longName: document.getElementById('createServiceAndNameBoxName').value,
                 serviceName: document.getElementById('createServiceAndNameBoxServiceName').value,
                 serviceHomeDirPath: document.getElementById('createServiceAndNameBoxDir').value,
-                isPathShared: true // because why not
+                isPathShared: window.isPathShared
               };
 
               safe.dns.createServiceAndName(payload).then(function() {
@@ -316,10 +299,29 @@
             }
           </script>
 
+          <h3>Delete Service For Name</h3>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="deleteServiceForNameBoxName" placeholder="Name"/>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="deleteServiceForNameBoxServiceName" placeholder="Service Name"/>
+          </div>
+          <button type="button" class="btn btn-primary submit" onClick="deleteServiceForName(this)">Delete Service</button>
+          <p id="deleteServiceForNameArea" class="result-area"></p>
+          <script class="source">
+            function deleteServiceForName(node) {
+              var name = document.getElementById('deleteServiceForNameBoxName').value,
+                  serviceName = document.getElementById('deleteServiceForNameBoxServiceName').value;
+
+              safe.dns.deleteService(serviceName, name).then(function() {
+                node.nextElementSibling.innerHTML = 'Deleted service "' + serviceName + '".';
+              }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
+            }
+          </script>
+
           <h3>Get Service Directory
             <small>getServiceDir(serviceName, name)</small>
           </h3>
-
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getServiceDirectoryServiceName" placeholder="Service Name"/>
           </div>
@@ -327,9 +329,7 @@
             <input type="text" class="form-control" class="form-control" id="getServiceDirectoryName" placeholder="Name"/>
           </div>
           <button type="button" class="btn btn-primary submit" onClick="getServiceDir(this)">Get Service Directory</button>
-
           <p id="getServiceDirArea" class="result-area"></p>
-
           <script class="source">
             function getServiceDir(node) {
               var name        = document.getElementById('getServiceDirectoryName').value,
@@ -342,10 +342,8 @@
           </script>
 
           <h3>Get Service File</h3>
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="getServiceFileServiceName"
-                   placeholder="Service Name"/>
+            <input type="text" class="form-control" class="form-control" id="getServiceFileServiceName" placeholder="Service Name"/>
           </div>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getServiceFileName" placeholder="Name"/>
@@ -369,24 +367,24 @@
         </div>
         <div class="tab-pane" id="nfs">
           <h3>Create Directory</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createDirectory"
-                   placeholder="Directory"/>
+            <input type="text" class="form-control" class="form-control" id="createDirectory" placeholder="Directory"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="createDirectory(this)">Create Directory
-          </button>
+          <div class="form-group">
+            <label><input type="checkbox" id="isPrivate"> Encrypt containing files (isPrivate)</label>
+          </div>
+          <button type="button" class="btn btn-primary submit" onClick="createDirectory(this)">Create Directory</button>
           <p id="createDirectoryArea" class="result-area"></p>
           <script class="source">
             function createDirectory(node) {
-              var createDirectory = document.getElementById('createDirectory').value;
+              var createDirectory = document.getElementById('createDirectory').value,
+                  isPrivate = document.getElementById('isPrivate').checked;
 
               safe.nfs.createDirectory(createDirectory, {
-                isPrivate: false,
+                isPrivate: isPrivate,
                 metadata: btoa('some meta data was put here'),
                 isVersioned: true,
-                isPathShared: true
+                isPathShared: window.isPathShared
               }).then(function(res) {
                 node.nextElementSibling.innerHTML = 'Created directory.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
@@ -394,19 +392,16 @@
           </script>
 
           <h3>Get Directory</h3>
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="getDirectory"
-                   placeholder="Directory"/>
+            <input type="text" class="form-control" class="form-control" id="getDirectory" placeholder="Directory"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="getDirectory(this)">Get Directory
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="getDirectory(this)">Get Directory</button>
           <p id="getDirectoryArea" class="result-area"></p>
           <script class="source">
             function getDirectory(node) {
               var getDirectory = document.getElementById('getDirectory').value;
 
-              safe.nfs.getDirectory(getDirectory, {isPathShared: 'true'}).then(function(res) {
+              safe.nfs.getDirectory(getDirectory, {isPathShared: window.isPathShared}).then(function(res) {
                 res.info.metadata = atob(res.info.metadata);
                 node.nextElementSibling.innerHTML = '<pre><code>' + JSON.stringify(res, null, 4) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
@@ -414,31 +409,24 @@
           </script>
 
           <h3>Delete Directory</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="deleteDirectory"
-                   placeholder="Directory"/>
+            <input type="text" class="form-control" class="form-control" id="deleteDirectory" placeholder="Directory"/>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="deleteDirectory(this)">Delete Directory
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="deleteDirectory(this)">Delete Directory</button>
           <p id="deleteDirectoryArea" class="result-area"></p>
           <script class="source">
             function deleteDirectory(node) {
               var deleteDirectory = document.getElementById('deleteDirectory').value;
 
-              safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: 'true'}).then(function(res) {
+              safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: window.isPathShared}).then(function(res) {
                 node.nextElementSibling.innerHTML = 'Deleted directory.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
 
           <h3>Create File</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="createFile"
-                   placeholder="File name"/>
+            <input type="text" class="form-control" class="form-control" id="createFile" placeholder="File name"/>
           </div>
           <button type="button" class="btn btn-primary submit" onClick="createFile(this)">Create File</button>
           <p id="createFileArea" class="result-area"></p>
@@ -447,10 +435,9 @@
               var createFile = document.getElementById('createFile').value;
 
               safe.nfs.createFile(createFile, {
-                isPrivate: false,
                 metadata: btoa('some meta data was put here'),
                 isVersioned: true,
-                isPathShared: true
+                isPathShared: window.isPathShared
               }).then(function(response) {
                 node.nextElementSibling.innerHTML = 'Created file. Now go add content!';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
@@ -458,18 +445,13 @@
           </script>
 
           <h3>Update File</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="updateFile"
-                   placeholder="File name"/>
+            <input type="text" class="form-control" class="form-control" id="updateFile" placeholder="File name"/>
           </div>
           <div class="form-group">
-            <textarea class="form-control" style="width: 500px;" id="updateFileContents"
-                      placeholder="Contents" rows="7"></textarea>
+            <textarea class="form-control" style="width: 500px;" id="updateFileContents" placeholder="Contents" rows="7"></textarea>
           </div>
-          <button type="button" class="btn btn-primary submit" onClick="updateFile(this)">Update File Contents
-          </button>
+          <button type="button" class="btn btn-primary submit" onClick="updateFile(this)">Update File Contents</button>
           <p id="updateFileArea" class="result-area"></p>
           <script class="source">
             function updateFile(node) {
@@ -477,7 +459,7 @@
               updateFileContents = document.getElementById('updateFileContents').value;
 
               safe.nfs.updateFile(updateFile, updateFileContents, {
-                isPathShared: true
+                isPathShared: window.isPathShared
               }).then(function(response) {
                 node.nextElementSibling.innerHTML = 'Updated file. Try fetching it now.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
@@ -485,10 +467,8 @@
           </script>
 
           <h3>Get File</h3>
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="getFile"
-                   placeholder="File Path"/>
+            <input type="text" class="form-control" class="form-control" id="getFile" placeholder="File Path"/>
           </div>
           <button type="button" class="btn btn-primary submit" onClick="getFile(this)">Get File</button>
           <p id="getFileArea" class="result-area"></p>
@@ -496,18 +476,15 @@
             function getFile(node) {
               var getFile = document.getElementById('getFile').value;
 
-              safe.nfs.getFile(getFile, {isPathShared: 'true'}).then(function(res) {
+              safe.nfs.getFile(getFile, {isPathShared: window.isPathShared}).then(function(res) {
                 node.nextElementSibling.innerHTML = '<pre><code>' + encode(res) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
 
           <h3>Delete File</h3>
-
-
           <div class="form-group">
-            <input type="text" class="form-control" class="form-control" id="deleteFile"
-                   placeholder="File Path"/>
+            <input type="text" class="form-control" class="form-control" id="deleteFile" placeholder="File Path"/>
           </div>
           <button type="button" class="btn btn-primary submit" onClick="deleteFile(this)">Delete File</button>
           <p id="deleteFileArea" class="result-area"></p>
@@ -515,11 +492,12 @@
             function deleteFile(node) {
               var deleteFile = document.getElementById('deleteFile').value;
 
-              safe.nfs.deleteFile(deleteFile, {isPathShared: 'true'}).then(function(res) {
+              safe.nfs.deleteFile(deleteFile, {isPathShared: window.isPathShared}).then(function(res) {
                 node.nextElementSibling.innerHTML = 'Deleted.';
-              }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(node.nextElementSibling));
+              }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
+
         </div>
       </div>
     </div>

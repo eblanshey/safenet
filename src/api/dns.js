@@ -4,7 +4,11 @@ module.exports = {
   },
 
   createName: function(name) {
-    return this.Request.post('/dns/' + encodeURIComponent(name)).auth().execute()
+    return this.Request.post('/dns/' + encodeURIComponent(name)).auth().execute();
+  },
+
+  deleteName: function(name) {
+    return this.Request.delete('/dns/' + encodeURIComponent(name)).auth().execute();
   },
 
   listServices: function(name) {
@@ -12,11 +16,11 @@ module.exports = {
   },
 
   createServiceAndName: function(payload) {
-    return this.Request.post('/dns').auth().body(payload).execute()
+    return this.Request.post('/dns').auth().body(payload).execute();
   },
 
   createServiceForName: function(payload) {
-    return this.Request.put('/dns').auth().body(payload).execute()
+    return this.Request.put('/dns').auth().body(payload).execute();
   },
 
   getServiceDir: function(serviceName, name) {
@@ -28,5 +32,9 @@ module.exports = {
     return this.Request.get(
       '/dns/'+encodeURIComponent(serviceName)+'/'+encodeURIComponent(name)+'/'+encodeURIComponent(filePath)
     ).execute();
+  },
+
+  deleteService: function(serviceName, name) {
+    return this.Request.delete('/dns/'+encodeURIComponent(serviceName)+'/'+encodeURIComponent(name)).auth().execute();
   }
 };
