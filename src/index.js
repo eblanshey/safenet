@@ -2,5 +2,5 @@ require('./init.js');
 
 var Safe = require('./safe.js');
 
-window.Safe = Safe;
+window.SafeApp = Safe;
 module.exports = Safe;

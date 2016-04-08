@@ -1,5 +1,5 @@
 {
-  "name": "safe-raw",
+  "name": "safejs",
   "version": "0.0.0",
   "description": "Low-level api wrapper around SAFE Network functions",
   "main": "lib/index.js",

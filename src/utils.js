@@ -1,4 +1,5 @@
-base64 = require('base64-js');
+var base64 = require('base64-js'),
+    nacl = require('tweetnacl');
 
 /**
  * Serializes auth data.
@@ -34,7 +35,7 @@ module.exports.serialize = function(auth) {
  * @source http://stackoverflow.com/a/20392392/371699
  * @param text
  */
-module.exports.parseJson = function(text) {
+function parseJson(text) {
   try {
     var o = JSON.parse(text);
     if (o && typeof o === "object" && o !== null)
@@ -44,25 +45,40 @@ module.exports.parseJson = function(text) {
 
   return text;
 };
+module.exports.parseJson = parseJson;
 
 /**
  * @source https://github.com/dchest/tweetnacl-util-js/blob/master/nacl-util.js#L16
  * @param s
  * @returns {Uint8Array}
  */
-module.exports.encodeUTF8 = function(s) {
+function encodeUTF8(s) {
   var i, d = unescape(encodeURIComponent(s)), b = new Uint8Array(d.length);
   for (i = 0; i < d.length; i++) b[i] = d.charCodeAt(i);
   return b;
 };
+module.exports.encodeUTF8 = encodeUTF8;
 
 /**
  * @source https://github.com/dchest/tweetnacl-util-js/blob/master/nacl-util.js#L22
  * @param arr
  * @returns {string}
  */
-module.exports.decodeUTF8 = function(arr) {
+function decodeUTF8(arr) {
   var i, s = [];
   for (i = 0; i < arr.length; i++) s.push(String.fromCharCode(arr[i]));
   return decodeURIComponent(escape(s.join('')));
 };
+module.exports.decodeUTF8 = decodeUTF8;
+
+module.exports.decrypt = function(text, nonce, key) {
+  var encryptedData = base64.toByteArray(text);
+  var message = base64.fromByteArray(nacl.secretbox.open(encryptedData, nonce, key));
+
+  return parseJson(atob(message));
+}
+
+module.exports.encrypt = function(text, nonce, key) {
+  var encrypted = nacl.secretbox(encodeUTF8(text), nonce, key);
+  return base64.fromByteArray(encrypted);
+}

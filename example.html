@@ -7,7 +7,6 @@
   <!-- The below is only for this example page. It is NOT required for the API. -->
   <script src="./assets/js/jquery-2.2.2.min.js"></script>
   <script src="./assets/js/bootstrap.min.js"></script>
-  <script src="./assets/js/prism.js"></script>
   <link rel="stylesheet" href="./assets/css/bootstrap.min.css">
   <link rel="stylesheet" href="./assets/css/boostrap-theme.css">
   <link rel="stylesheet" href="./assets/css/prism.css">
@@ -15,17 +14,9 @@
 
   <script>
     // Set the logger for the client
-    Safe.log = console.log.bind(console);
+    SafeApp.log = console.log.bind(console);
 
-    var safe = new Safe({
-      id: 'com.samp-company.web',
-      name: 'Raw Safe API Example',
-      vendor: 'Sample-Company',
-      version: '0.1'
-    }, ['SAFE_DRIVE_ACCESS']);
-
-    // Automatically try to authenticate on page load
-    safe.auth.authenticate();
+    var Safe = null;
 
     function addError(element, error) {
       console.log(error.toString());
@@ -42,21 +33,6 @@
       pathShared.change(function(e) {
         window.isPathShared = pathShared.is(":checked");
       });
-
-      // add source links
-      $('#playgroundTabs script').each(function(k, script) {
-        script = $(script);
-        // Get js source and make a new box
-        var source = script.text();
-        // Add a source link
-        var sourceLink = $('<div class="source-link">Source</div>').insertAfter(script);
-        $('<div style="display: none"><pre><code>' + source + '</code></pre></div>').insertAfter(sourceLink);
-      })
-
-      // When source linkn is clicked, toggle the code area
-      $('.source-link').click(function() {
-        $(this).next().toggle();
-      })
     });
 
     // html encode (prevents JS from running in result areas)
@@ -96,6 +72,12 @@
     button.submit {
       margin-bottom: 10px;
     }
+
+    .file-link {
+      text-decoration: underline;
+      font-size: 16px;
+      font-family: Helvetica, Arial, sans-serif;
+    }
   </style>
 </head>
 <body class="language-javascript">
@@ -114,6 +96,7 @@
     <div class="panel-body">
       <p>The following options will be used for the appropriate API calls in the playground below.</p>
       <label><input type="checkbox" id="isPathShared"> Use SAFEDrive (isPathShared)</label><br/>
+      <label><input type="checkbox" id="autoAuth"> Automatically authenticate on page load</label><br/>
 
       <script>
         function showExplanation() {
@@ -127,6 +110,9 @@
           considered as residing in a root public folder called "SAFEDrive". Everything here can be written and modified by any
           application. If FALSE, the another default root directory is used. Files and directories created with one option are not visible
           when the other option is toggled, so you will see how important it is to keep track of it.</p>
+
+        <p><b>Automatically authenticate:</b> For convenience, automatically authenticate using saved data when the page loads. It will remember
+        what values you used last for the Safe initialization and attempt to use them again.</p>
       </div>
     </div>
   </div>
@@ -137,21 +123,52 @@
     </div>
     <div class="panel-body">
       <ul class="nav nav-tabs" style="margin-bottom: 15px;font-size:18px;">
-        <li class="active"><a aria-expanded="true" href="#auth" data-toggle="tab">Auth</a></li>
-        <li class=""><a aria-expanded="false" href="#dns" data-toggle="tab">DNS</a></li>
-        <li class=""><a aria-expanded="false" href="#nfs" data-toggle="tab">NFS</a></li>
+        <li><a aria-expanded="true" href="#auth" data-toggle="tab">Auth</a></li>
+        <li><a aria-expanded="false" href="#dns" data-toggle="tab">DNS</a></li>
+        <li><a aria-expanded="false" href="#nfs" data-toggle="tab">NFS</a></li>
       </ul>
 
       <div id="playgroundTabs" class="tab-content">
         <div class="tab-pane active" id="auth">
           <div>
+            <h3>Initialize</h3>
+            <div class="form-group">
+              <input type="text" value="com.samp-company.web" class="form-control" class="form-control" class="form-control" id="initializeIdBox" placeholder="App ID (e.g. com.samp-company.web)"/>
+            </div>
+            <div class="form-group">
+              <input type="text" value="Dat App" class="form-control" class="form-control" class="form-control" id="initializeNameBox" placeholder="App Name (e.g. Dat App)"/>
+            </div>
+            <div class="form-group">
+              <input type="text" value="My Company" class="form-control" class="form-control" class="form-control" id="initializeVendorBox" placeholder="Vendor (e.g. My Company)"/>
+            </div>
+            <div class="form-group">
+              <input type="text" value="0.0.1" class="form-control" class="form-control" class="form-control" id="initializeVersionBox" placeholder="Version (e.g. 0.0.1)"/>
+            </div>
+            <button type="button" class="btn btn-primary submit" onClick="initialize(this)" id="initializeButton">Initialize Safe Instance</button>
+            <p id="initializeArea" class="result-area"></p>
+            <script>
+              function initialize(node) {
+                Safe = new SafeApp({
+                  id: document.getElementById('initializeIdBox').value,
+                  name: document.getElementById('initializeNameBox').value,
+                  vendor: document.getElementById('initializeVendorBox').value,
+                  version: document.getElementById('initializeVersionBox').value
+                }, ['SAFE_DRIVE_ACCESS']); // include SAFEDrive access
+
+                node.nextElementSibling.innerHTML = 'Initialized a new Safe instance. You can authenticate now.';
+              }
+            </script>
+
+          </div>
+
+          <div>
             <h3>Authorize</h3>
 
-            <button type="button" class="btn btn-primary submit" onClick="authorize(this)">Authorize</button>
+            <button type="button" class="btn btn-primary submit" onClick="authorize(this)" id="authorizeButton">Authorize</button>
             <p id="authorizeArea" class="result-area"></p>
             <script>
               function authorize(node) {
-                safe.auth.authenticate().then(function() {
+                Safe.auth.authenticate().then(function() {
                   node.nextElementSibling.innerHTML = 'Authorized successfully.';
                 }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
               }
@@ -165,7 +182,7 @@
           <p id="isAuthorizedArea" class="result-area"></p>
           <script class="source">
             function isAuthorized(node) {
-              safe.auth.isAuthorized().then(function(bool) {
+              Safe.auth.isAuthorized().then(function(bool) {
                 node.nextElementSibling.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -177,7 +194,7 @@
           <p id="deauthorizeArea" class="result-area"></p>
           <script class="source">
             function deauthorize(node) {
-              safe.auth.deauthorize().then(function() {
+              Safe.auth.deauthorize().then(function() {
                 node.nextElementSibling.innerHTML = 'Unauthorized.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -190,7 +207,7 @@
           <p id="namesArea" class="result-area"></p>
           <script class="source">
             function getNames(node) {
-              safe.dns.listNames().then(function(names) {
+              Safe.dns.listNames().then(function(names) {
                 node.nextElementSibling.innerHTML = names.length > 0 ? names.join(', ') : 'No names found.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -206,7 +223,7 @@
             function createName(node) {
               var name = document.getElementById('createNameBox').value;
 
-              safe.dns.createName(name).then(function() {
+              Safe.dns.createName(name).then(function() {
                 node.nextElementSibling.innerHTML = 'Created new name "'+name+'".';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -223,7 +240,7 @@
             function deleteName(node) {
               var name = document.getElementById('deleteNameBox').value;
 
-              safe.dns.deleteName(name).then(function() {
+              Safe.dns.deleteName(name).then(function() {
                 node.nextElementSibling.innerHTML = 'Deleted name "'+name+'".';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -239,7 +256,7 @@
             function listServices(node) {
               var name = document.getElementById('listServicesBox').value;
 
-              safe.dns.listServices(name).then(function(services) {
+              Safe.dns.listServices(name).then(function(services) {
                 node.nextElementSibling.innerHTML = services.length > 0 ? services.join(', ') : 'No services found.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -266,7 +283,7 @@
                 isPathShared: window.isPathShared
               };
 
-              safe.dns.createServiceForName(payload).then(function() {
+              Safe.dns.createServiceForName(payload).then(function() {
                 node.nextElementSibling.innerHTML = 'Created new service for name "' + payload.longName + '".';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -293,7 +310,7 @@
                 isPathShared: window.isPathShared
               };
 
-              safe.dns.createServiceAndName(payload).then(function() {
+              Safe.dns.createServiceAndName(payload).then(function() {
                 node.nextElementSibling.innerHTML = 'Created new service and name.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -313,7 +330,7 @@
               var name = document.getElementById('deleteServiceForNameBoxName').value,
                   serviceName = document.getElementById('deleteServiceForNameBoxServiceName').value;
 
-              safe.dns.deleteService(serviceName, name).then(function() {
+              Safe.dns.deleteService(serviceName, name).then(function() {
                 node.nextElementSibling.innerHTML = 'Deleted service "' + serviceName + '".';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -335,7 +352,7 @@
               var name        = document.getElementById('getServiceDirectoryName').value,
                   serviceName = document.getElementById('getServiceDirectoryServiceName').value;
 
-              safe.dns.getServiceDir(serviceName, name).then(function(dir) {
+              Safe.dns.getServiceDir(serviceName, name).then(function(dir) {
                 node.nextElementSibling.innerHTML = 'Directory: <br /><pre><code>' + JSON.stringify(dir, null, 2) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -359,8 +376,9 @@
                   serviceName = document.getElementById('getServiceFileServiceName').value,
                   filePath    = document.getElementById('getServiceFilePath').value;
 
-              safe.dns.getFile(serviceName, name, filePath).then(function(file) {
-                $("<div>Raw file: <br /><pre><code>" + encode(file) + "</code></pre></div>").appendTo(node.nextElementSibling);
+              Safe.dns.getFile(serviceName, name, filePath).then(function(file) {
+                var link = '<a href="http://'+serviceName+'.'+name+'.safenet/'+filePath+'" target="_blank" class="file-link">Link to File</a>';
+                $("<div>"+link+"<br><br>Raw file: <br /><pre><code>" + encode(file) + "</code></pre></div>").appendTo(node.nextElementSibling);
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
@@ -380,7 +398,7 @@
               var createDirectory = document.getElementById('createDirectory').value,
                   isPrivate = document.getElementById('isPrivate').checked;
 
-              safe.nfs.createDirectory(createDirectory, {
+              Safe.nfs.createDirectory(createDirectory, {
                 isPrivate: isPrivate,
                 metadata: btoa('some meta data was put here'),
                 isVersioned: true,
@@ -401,7 +419,7 @@
             function getDirectory(node) {
               var getDirectory = document.getElementById('getDirectory').value;
 
-              safe.nfs.getDirectory(getDirectory, {isPathShared: window.isPathShared}).then(function(res) {
+              Safe.nfs.getDirectory(getDirectory, {isPathShared: window.isPathShared}).then(function(res) {
                 res.info.metadata = atob(res.info.metadata);
                 node.nextElementSibling.innerHTML = '<pre><code>' + JSON.stringify(res, null, 4) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
@@ -418,7 +436,7 @@
             function deleteDirectory(node) {
               var deleteDirectory = document.getElementById('deleteDirectory').value;
 
-              safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: window.isPathShared}).then(function(res) {
+              Safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: window.isPathShared}).then(function(res) {
                 node.nextElementSibling.innerHTML = 'Deleted directory.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -434,7 +452,7 @@
             function createFile(node) {
               var createFile = document.getElementById('createFile').value;
 
-              safe.nfs.createFile(createFile, {
+              Safe.nfs.createFile(createFile, {
                 metadata: btoa('some meta data was put here'),
                 isVersioned: true,
                 isPathShared: window.isPathShared
@@ -458,7 +476,7 @@
               var updateFile = document.getElementById('updateFile').value;
               updateFileContents = document.getElementById('updateFileContents').value;
 
-              safe.nfs.updateFile(updateFile, updateFileContents, {
+              Safe.nfs.updateFile(updateFile, updateFileContents, {
                 isPathShared: window.isPathShared
               }).then(function(response) {
                 node.nextElementSibling.innerHTML = 'Updated file. Try fetching it now.';
@@ -470,13 +488,26 @@
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getFile" placeholder="File Path"/>
           </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="getFileOffset" placeholder="Integer offset (optional)"/>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="getFileLength" placeholder="Integer length (optional)"/>
+          </div>
           <button type="button" class="btn btn-primary submit" onClick="getFile(this)">Get File</button>
           <p id="getFileArea" class="result-area"></p>
           <script class="source">
             function getFile(node) {
-              var getFile = document.getElementById('getFile').value;
+              var getFile = document.getElementById('getFile').value,
+                  options = {
+                    isPathShared: window.isPathShared,
+                    offset: document.getElementById('getFileOffset').value,
+                    length: document.getElementById('getFileLength').value,
+                  };
 
-              safe.nfs.getFile(getFile, {isPathShared: window.isPathShared}).then(function(res) {
+              console.log(options);
+
+              Safe.nfs.getFile(getFile, options).then(function(res) {
                 node.nextElementSibling.innerHTML = '<pre><code>' + encode(res) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -492,7 +523,7 @@
             function deleteFile(node) {
               var deleteFile = document.getElementById('deleteFile').value;
 
-              safe.nfs.deleteFile(deleteFile, {isPathShared: window.isPathShared}).then(function(res) {
+              Safe.nfs.deleteFile(deleteFile, {isPathShared: window.isPathShared}).then(function(res) {
                 node.nextElementSibling.innerHTML = 'Deleted.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -504,6 +535,86 @@
   </div>
 
 </div>
+
+<script src="./assets/js/prism.js"></script>
+<script>
+  // We'll put stuff not related to Safe down here, out of the way
+  $(document).ready(function() {
+    restoringForm();
+    tabRestore();
+    sourceCodeFunctionality();
+    initializeSafeOnLoad(); // called after restoring form
+  });
+
+  function initializeSafeOnLoad() {
+    if ($('#autoAuth').prop('checked')) {
+      initialize(document.getElementById('initializeButton'));
+      authorize(document.getElementById('authorizeButton'));
+    }
+  }
+
+  function sourceCodeFunctionality() {
+    // add source links
+    $('#playgroundTabs script').each(function(k, script) {
+      script = $(script);
+      // Get js source and make a new box
+      var source = script.text();
+      // Add a source link after each script area
+      var sourceLink = $('<div class="source-link">Source</div>').insertAfter(script);
+      // Add the (hidden) source code box
+      $('<div style="display: none"><pre><code>' + encode(source) + '</code></pre></div>').insertAfter(sourceLink);
+    });
+
+    // When source link is clicked, toggle the code area
+    $('.source-link').click(function() {
+      $(this).next().toggle();
+    });
+  }
+
+  // Save which tab we're in case we reload the page
+  function tabRestore() {
+    $('a[href="'+(location.hash || 'auth')+'"]').tab('show');
+    $(document.body).on("click", "a[data-toggle]", function(event) {
+      location.hash = this.getAttribute("href");
+    });
+  }
+
+  // Restoring form when returning
+  function restoringForm() {
+    var saveData = function(keyName, inputType) {
+      var valueType = inputType === 'checkbox' ? 'checked' : 'value';
+      var obj = {};
+      $('input[type='+inputType+']').each(function(i, el) {
+        obj[el.getAttribute('id')] = el[valueType];
+      });
+      localStorage.setItem(keyName, JSON.stringify(obj));
+    }
+
+    // Save all fields when a button or checkbox is clicked
+    $('button, input[type=checkbox]').on('change click', function() {
+      saveData('all-text-inputs', 'text');
+      saveData('all-checkbox-inputs', 'checkbox');
+    });
+
+    var restoreData = function(keyName, inputType) {
+      var valueType = inputType === 'checkbox' ? 'checked' : 'value';
+      var fields = localStorage.getItem(keyName);
+
+      if (fields) {
+        var obj = JSON.parse(fields);
+        for (var id in obj) {
+          var el = document.getElementById(id);
+          if (el) {
+            el[valueType] = obj[id];
+          }
+        }
+      }
+    }
+
+    restoreData('all-text-inputs', 'text');
+    restoreData('all-checkbox-inputs', 'checkbox');
+  }
+</script>
 
 </body>
 </html>

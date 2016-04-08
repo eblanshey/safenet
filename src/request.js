@@ -1,11 +1,8 @@
-var nacl   = require('tweetnacl'),
-    base64 = require('base64-js');
-
 var utils = require('./utils.js');
 
 // This is a list of plain text body responses that the SAFE client returns.
 // If the response body contains any of these, then we know that decryption is not required.
-var doNoDecrypt = ['OK', 'Accepted', 'Unauthorized', 'Server Error'];
+var doNotDecrypt = ['OK', 'Accepted', 'Unauthorized', 'Server Error'];
 
 /**
  * The factory will create new requests to the launcher, passing in the Safe instance,
@@ -58,8 +55,9 @@ function Request(Safe, uri, method) {
   this._returnMeta = false;
 }
 
-// This could also just be http://localhost:8100/
-Request.baseUrl = 'http://api.safenet';
+// Technically we could use http://api.safenet but it wouldn't even attempt to connect
+// if there is no internet connection.
+Request.baseUrl = 'http://localhost:8100';
 
 // Add a body to the request
 Request.prototype.body = function(body) {
@@ -72,6 +70,11 @@ Request.prototype.body = function(body) {
 // because usually authentication implies encryption.
 Request.prototype.auth = function() {
   this._needAuth = true;
+  return this;
+}
+
+Request.prototype.query = function(query) {
+  this._query = query;
   return this;
 }
 
@@ -99,7 +102,7 @@ Request.prototype.execute = function() {
 
     // Encrypt body if needed
     if (this._needAuth)
-      payload.body = encrypt.call(this, payload.body);
+      payload.body = utils.encrypt(payload.body, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
   }
 
   // Add token if requested
@@ -113,10 +116,12 @@ Request.prototype.execute = function() {
   if (['POST', 'PUT'].indexOf(payload.method) > -1)
     payload.headers['Content-Type'] = this._needAuth ? 'text/plain' : 'application/json';
 
-  Safe.log('Executing '+payload.method+' request with uri "'+this.uri+'" and payload: ', payload);
+  var url = buildUrl.call(this);
+
+  Safe.log('Executing '+payload.method+' request with uri "'+url+'" and payload: ', payload);
 
   // Send request, check status, get response data, and decrypt if necessary
-  return fetch(Request.baseUrl + this.uri, payload)
+  return fetch(url, payload)
     .then(prepareResponse.bind(this), networkError.bind(this))
     .catch(genericError.bind(this))
 }
@@ -129,12 +134,12 @@ function prepareResponse(response) {
     Safe.log('Launcher returned status '+response.status);
     if (response.ok) {
       // If not an authorized request, or not encrypted, no decryption necessary
-      if (!this._needAuth || doNoDecrypt.indexOf(text) > -1)
+      if (!this._needAuth || doNotDecrypt.indexOf(text) > -1)
         var body = utils.parseJson(text);
 
       // Otherwise, decrypt response
       else
-        var body = decrypt.call(this, text);
+        var body = utils.decrypt(text, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
 
       // Lastly, if any meta data was requested (e.g. the headers), then return an object
       if (this._returnMeta) {
@@ -144,15 +149,15 @@ function prepareResponse(response) {
       }
     } else {
       // If authentication was requested, then decrypt the error message received.
-      if (this._needAuth && doNoDecrypt.indexOf(text) === -1) {
-        var message = decrypt.call(this, text),
+      if (this._needAuth && doNotDecrypt.indexOf(text) === -1) {
+        var message = utils.decrypt(text, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')),
             parsed = parseSafeMessage(message, response.status);
 
         // Throw a "launcher" error type, which is an error from the launcher.
         throw new SafeError('launcher', parsed.message, parsed.status, response);
       } else {
         // If no message received, it's a standard http response error
-        var parsed = parseSafeMessage(utils.parseJson(text), status);
+        var parsed = parseSafeMessage(utils.parseJson(text), response.status);
         throw new SafeError('http', parsed.message, parsed.status, response);
       }
     }
@@ -185,16 +190,17 @@ function SafeError(type, message, status, response) {
   }
 }
 
-function decrypt(text) {
-  var encryptedData = base64.toByteArray(text);
-  var message = base64.fromByteArray(nacl.secretbox.open(encryptedData, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey')));
+function buildUrl() {
+  var base = Request.baseUrl + this.uri;
 
-  return utils.parseJson(atob(message));
-}
+  if (this._query && Object.keys(this._query).length > 0) {
+    console.log(serializeQuery(this._query));
+    var queryString = utils.encrypt(serializeQuery(this._query), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
 
-function encrypt(text) {
-  var encrypted = nacl.secretbox(utils.encodeUTF8(text), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
-  return base64.fromByteArray(encrypted);
+    return base + '?' + queryString;
+  }
+
+  return base;
 }
 
 /**
@@ -207,6 +213,21 @@ function parseSafeMessage(message, status) {
   } else {
     return {status: status, message: message};
   }
+}
+
+/**
+ * Make a query string from an object.
+ * @param obj
+ * @returns {string}
+ */
+function serializeQuery(obj) {
+  var str = [];
+  for(var p in obj){
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  }
+  return str.join("&");
 }
 
 module.exports.Request = Request;

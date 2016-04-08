@@ -8,11 +8,11 @@ module.exports = {
   },
 
   getDirectory: function(dir, options) {
-    return this.Request.get('/nfs/directory/'+encodeURIComponent(dir)+'/'+isPathShared(options.isPathShared)).auth().execute();
+    return this.Request.get('/nfs/directory/'+encodeURIComponent(dir)+'/'+pathSharedString(options.isPathShared)).auth().execute();
   },
 
   deleteDirectory: function(dir, options) {
-    return this.Request.delete('/nfs/directory/'+encodeURIComponent(dir)+'/'+isPathShared(options.isPathShared)).auth().execute();
+    return this.Request.delete('/nfs/directory/'+encodeURIComponent(dir)+'/'+pathSharedString(options.isPathShared)).auth().execute();
   },
 
   createFile: function(file, options) {
@@ -24,15 +24,18 @@ module.exports = {
     // If content is a TypedArray, then convert it to a string first.
     if (ArrayBuffer.isView(content)) content = toUTF8(content);
 
-    return this.Request.put('/nfs/file/'+encodeURIComponent(file)+'/'+isPathShared(options.isPathShared)).auth().body(content).execute();
+    return this.Request.put('/nfs/file/'+encodeURIComponent(file)+'/'+pathSharedString(options.isPathShared)).auth().body(content).execute();
   },
 
   getFile: function(file, options) {
-    return this.Request.get('/nfs/file/'+encodeURIComponent(file)+'/'+isPathShared(options.isPathShared)).auth().execute();
+    var query = {};
+    if (options.offset) query.offset = options.offset;
+    if (options.length) query.length = options.length;
+    return this.Request.get('/nfs/file/'+encodeURIComponent(file)+'/'+pathSharedString(options.isPathShared)).query(query).auth().execute();
   },
 
   deleteFile: function(file, options) {
-    return this.Request.delete('/nfs/file/'+encodeURIComponent(file)+'/'+isPathShared(options.isPathShared)).auth().execute();
+    return this.Request.delete('/nfs/file/'+encodeURIComponent(file)+'/'+pathSharedString(options.isPathShared)).auth().execute();
   }
 
 };
@@ -43,7 +46,7 @@ module.exports = {
  * @param isPathShared
  * @returns {string}
  */
-function isPathShared(isPathShared) {
+function pathSharedString(isPathShared) {
   if (typeof isPathShared === 'string') {
     return isPathShared === 'true' ? 'true' : 'false';
   } else {
