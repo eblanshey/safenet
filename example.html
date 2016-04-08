@@ -131,7 +131,7 @@
       <div id="playgroundTabs" class="tab-content">
         <div class="tab-pane active" id="auth">
           <div>
-            <h3>Initialize</h3>
+            <h3>Initialize <small>new SafeApp(app, permissions, config)</small></h3>
             <div class="form-group">
               <input type="text" value="com.samp-company.web" class="form-control" class="form-control" class="form-control" id="initializeIdBox" placeholder="App ID (e.g. com.samp-company.web)"/>
             </div>
@@ -182,7 +182,7 @@
           <p id="isAuthorizedArea" class="result-area"></p>
           <script class="source">
             function isAuthorized(node) {
-              Safe.auth.isAuthorized().then(function(bool) {
+              Safe.auth.isAuth().then(function(bool) {
                 node.nextElementSibling.innerHTML = bool ? 'Authorized.' : 'Not authorized.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }

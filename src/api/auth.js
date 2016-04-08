@@ -7,7 +7,6 @@ module.exports = {
   /**
    * Call this method in order to authenticate with SAFE, using either previous authentication
    * or new.
-   *
    * @returns {Promise}
    */
   authenticate: function () {
@@ -17,7 +16,7 @@ module.exports = {
     // If nothing stored, proceed with new authorization
     if (!stored) {
       this.log('No auth data stored, starting authorization from scratch...');
-      return this.auth.authorize(this.app, this.permissions);
+      return this.auth.authorize();
     }
 
     // Otherwise, set the auth data on the Request object so that it can be used for requests
@@ -26,13 +25,17 @@ module.exports = {
 
     // Use the saved auth data to check if we're already authorized. If not, it will clear the stored
     // data, then proceed with new authorization.
-    return this.auth.isAuthorized()
+    return this.auth.isAuth()
       .then(function(result) {
         if (result === false)
-          return this.auth.authorize(this.app, this.permissions);
+          return this.auth.authorize();
       }.bind(this));
   },
 
+  /**
+   * Requests authorization from the safe launcher.
+   * @returns {*}
+   */
   authorize: function () {
     this.log('Authorizing...');
     // Generate new asymmetric key pair and nonce, e.g. public-key encryption
@@ -80,7 +83,7 @@ module.exports = {
    * Checks if we're authenticated on the SAFE network
    * @returns {*}
    */
-  isAuthorized: function () {
+  isAuth: function () {
     this.log('Checking if authorized...');
     return this.Request.get('/auth').auth().execute()
       // let's use our own function here, that resolve true or false,
@@ -104,6 +107,10 @@ module.exports = {
       }.bind(this));
   },
 
+  /**
+   * Deauthorizes you from the launcher, and removed saved auth data from storage.
+   * @returns {*}
+   */
   deauthorize: function () {
     this.log('Deauthorizing...');
     return this.Request.delete('/auth').auth().execute()
