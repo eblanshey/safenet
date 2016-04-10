@@ -368,17 +368,27 @@
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getServiceFilePath" placeholder="Path"/>
           </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="getServiceFileOffset" placeholder="Integer offset (optional)"/>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="getServiceFileLength" placeholder="Integer length (optional)"/>
+          </div>
           <button type="button" class="btn btn-primary submit" onClick="getServiceFile(this)">Get Service File</button>
           <p id="getServiceFileArea" class="result-area"></p>
           <script class="source">
             function getServiceFile(node) {
               var name        = document.getElementById('getServiceFileName').value,
                   serviceName = document.getElementById('getServiceFileServiceName').value,
-                  filePath    = document.getElementById('getServiceFilePath').value;
+                  filePath    = document.getElementById('getServiceFilePath').value,
+                  options = {
+                    offset: document.getElementById('getServiceFileOffset').value,
+                    length: document.getElementById('getServiceFileLength').value,
+                  };
 
-              Safe.dns.getFile(serviceName, name, filePath).then(function(file) {
+              Safe.dns.getFile(serviceName, name, filePath, options).then(function(file) {
                 var link = '<a href="http://'+serviceName+'.'+name+'.safenet/'+filePath+'" target="_blank" class="file-link">Link to File</a>';
-                $("<div>"+link+"<br><br>Raw file: <br /><pre><code>" + encode(file) + "</code></pre></div>").appendTo(node.nextElementSibling);
+                node.nextElementSibling.innerHTML = "<div>"+link+"<br><br>Raw file: <br /><pre><code>" + encode(file.body) + "</code></pre></div>";
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
@@ -400,10 +410,10 @@
 
               Safe.nfs.createDirectory(createDirectory, {
                 isPrivate: isPrivate,
-                metadata: btoa('some meta data was put here'),
+                metadata: 'some meta data was put here',
                 isVersioned: true,
                 isPathShared: window.isPathShared
-              }).then(function(res) {
+              }).then(function() {
                 node.nextElementSibling.innerHTML = 'Created directory.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -419,9 +429,8 @@
             function getDirectory(node) {
               var getDirectory = document.getElementById('getDirectory').value;
 
-              Safe.nfs.getDirectory(getDirectory, {isPathShared: window.isPathShared}).then(function(res) {
-                res.info.metadata = atob(res.info.metadata);
-                node.nextElementSibling.innerHTML = '<pre><code>' + JSON.stringify(res, null, 4) + '</code></pre>';
+              Safe.nfs.getDirectory(getDirectory, {isPathShared: window.isPathShared}).then(function(dir) {
+                node.nextElementSibling.innerHTML = '<pre><code>' + JSON.stringify(dir, null, 4) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
@@ -436,7 +445,7 @@
             function deleteDirectory(node) {
               var deleteDirectory = document.getElementById('deleteDirectory').value;
 
-              Safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: window.isPathShared}).then(function(res) {
+              Safe.nfs.deleteDirectory(deleteDirectory, {isPathShared: window.isPathShared}).then(function() {
                 node.nextElementSibling.innerHTML = 'Deleted directory.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -453,10 +462,10 @@
               var createFile = document.getElementById('createFile').value;
 
               Safe.nfs.createFile(createFile, {
-                metadata: btoa('some meta data was put here'),
+                metadata: 'some meta data was put here',
                 isVersioned: true,
                 isPathShared: window.isPathShared
-              }).then(function(response) {
+              }).then(function() {
                 node.nextElementSibling.innerHTML = 'Created file. Now go add content!';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -465,6 +474,9 @@
           <h3>Update File</h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="updateFile" placeholder="File name"/>
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control" class="form-control" id="updateFileOffset" placeholder="Integer offset (optional)"/>
           </div>
           <div class="form-group">
             <textarea class="form-control" style="width: 500px;" id="updateFileContents" placeholder="Contents" rows="7"></textarea>
@@ -477,8 +489,9 @@
               updateFileContents = document.getElementById('updateFileContents').value;
 
               Safe.nfs.updateFile(updateFile, updateFileContents, {
-                isPathShared: window.isPathShared
-              }).then(function(response) {
+                isPathShared: window.isPathShared,
+                offset: document.getElementById('updateFileOffset').value
+              }).then(function() {
                 node.nextElementSibling.innerHTML = 'Updated file. Try fetching it now.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
@@ -505,10 +518,8 @@
                     length: document.getElementById('getFileLength').value,
                   };
 
-              console.log(options);
-
-              Safe.nfs.getFile(getFile, options).then(function(res) {
-                node.nextElementSibling.innerHTML = '<pre><code>' + encode(res) + '</code></pre>';
+              Safe.nfs.getFile(getFile, options).then(function(file) {
+                node.nextElementSibling.innerHTML = '<pre><code>' + encode(file.body) + '</code></pre>';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }
           </script>
@@ -523,7 +534,7 @@
             function deleteFile(node) {
               var deleteFile = document.getElementById('deleteFile').value;
 
-              Safe.nfs.deleteFile(deleteFile, {isPathShared: window.isPathShared}).then(function(res) {
+              Safe.nfs.deleteFile(deleteFile, {isPathShared: window.isPathShared}).then(function() {
                 node.nextElementSibling.innerHTML = 'Deleted.';
               }, addError.bind(null, node.nextElementSibling)).then(finalize.bind(null, node.nextElementSibling));
             }

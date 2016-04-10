@@ -2,7 +2,7 @@ var utils = require('./utils.js');
 
 // This is a list of plain text body responses that the SAFE client returns.
 // If the response body contains any of these, then we know that decryption is not required.
-var doNotDecrypt = ['OK', 'Accepted', 'Unauthorized', 'Server Error'];
+var doNotDecrypt = ['OK', 'Unauthorized', 'Server Error'];
 
 /**
  * The factory will create new requests to the launcher, passing in the Safe instance,
@@ -145,7 +145,8 @@ function prepareResponse(response) {
       if (this._returnMeta) {
         return {body: body, meta: response.headers.entries()};
       } else {
-        return body;
+        // No need to return 'OK' for responses that return that.
+        return (typeof body === 'string' && body.toUpperCase() === 'OK') ? undefined : body;
       }
     } else {
       // If authentication was requested, then decrypt the error message received.
@@ -194,8 +195,11 @@ function buildUrl() {
   var base = Request.baseUrl + this.uri;
 
   if (this._query && Object.keys(this._query).length > 0) {
-    console.log(serializeQuery(this._query));
-    var queryString = utils.encrypt(serializeQuery(this._query), this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
+    var queryString = serializeQuery(this._query);
+
+    if (this._needAuth) {
+      queryString = utils.encrypt(queryString, this.Safe.getAuth('symNonce'), this.Safe.getAuth('symKey'));
+    }
 
     return base + '?' + queryString;
   }

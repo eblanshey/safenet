@@ -29,9 +29,15 @@ module.exports = {
   },
 
   getFile: function(serviceName, name, filePath, options) {
-    return this.Request.get(
-      '/dns/'+encodeURIComponent(serviceName)+'/'+encodeURIComponent(name)+'/'+encodeURIComponent(filePath)
-    ).execute();
+    var query = {};
+    if (options.offset) query.offset = options.offset;
+    if (options.length) query.length = options.length;
+
+    return this.Request
+      .get('/dns/'+encodeURIComponent(serviceName)+'/'+encodeURIComponent(name)+'/'+encodeURIComponent(filePath))
+      .query(query)
+      .returnMeta()
+      .execute();
   },
 
   deleteService: function(serviceName, name) {
