@@ -35,11 +35,6 @@
       });
     });
 
-    // html encode (prevents JS from running in result areas)
-    function encode(str) {
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    }
-
     // After api results, do some work
     function finalize(node) {
       // Rerun code highlighter
@@ -625,6 +620,12 @@
     restoreData('all-text-inputs', 'text');
     restoreData('all-checkbox-inputs', 'checkbox');
   }
+
+  // html encode (prevents JS from running in result areas)
+  function encode(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
 </script>
 
 </body>

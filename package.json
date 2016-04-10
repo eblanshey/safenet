@@ -1,7 +1,7 @@
 {
-  "name": "safejs",
+  "name": "safenet",
   "version": "0.0.0",
-  "description": "Low-level api wrapper around SAFE Network functions",
+  "description": "Low-level javascript API wrapper for communicating with the SAFE Network launcher",
   "main": "lib/index.js",
   "scripts": {
     "preinstall": "npm run build",
@@ -11,8 +11,9 @@
   },
   "keywords": [
     "safe",
-    "nentwork",
+    "network",
     "api",
+    "launcher",
     "maidsafe",
     "decentralized",
     "decentralization"

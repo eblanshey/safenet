@@ -34,6 +34,19 @@ Instantiates new SafeApp object.
 		- `get`: function with no arguments. Returns data from storage.
 		- `clear`: function with no arguments. Clears data from storage.
 
+### Errors
+
+If an error occur with an API request, the promise will be rejected with a SafeError object. All SafeError objects contain the following properties:
+
+* `isSafeError`: `true`
+* `message`: string of error
+* `type`: one of `launcher`, `http`, `network`, or `error`. Here is a description of each:
+	* `error`: generic error
+	* `network`: could not connect to the network/launcher
+	* `http`: a generic http response error, e.g. a non-2xx response, but without a SAFE-related error attached.
+	* `launcher`: the launcher returned an error
+* `status`: status code. If `http` error, it'll be the http header code (e.g. `400`). If launcher, the launcher error code (e.g. `-502`)
+* `response`: if an `http` or `launcher` type, this will contain the [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) object returned from the request. Body has already been retrieved and is in the `message` property above. If another type, this will be `undefined`.
 
 ### Authorization (SafeApp.auth)
 
@@ -187,4 +200,5 @@ Fetches the contents of the file using the provided file path. `options` is an o
 Deletes the file. `options` must contain `isPathShared`.
 
 **Returns:** `undefined`
+
 
