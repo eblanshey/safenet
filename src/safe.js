@@ -30,7 +30,7 @@ function Safe(app, permissions, conf) {
       this.storage = storage.localStorage;
     } else {
       throw new Error('Default storage is localStorage, which is not present in this environment.' +
-      ' You must provide a storage class that has the `set`, `get`, and `clear` methods.');
+      ' You must provide a storage class that has the `set`, `get`, and `clear` methods. See readme for details.');
     }
   }
 
