@@ -1,6 +1,8 @@
 <html>
 <head>
   <title>SAFE Web App Sample</title>
+  <link href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAABILAAASCwAAAAAAAAAAAABjZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/ZGjG/2Roxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9lacf/Y2fG/19jxf9gZMX/ZGjG/2Roxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9hZcX/WFzC/2Jmxv9xdMv/bXHK/1xgw/9eYsT/ZGjG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9iZsb/aW3I/6yu4f/v8Pn////////////b3PL/e3/P/11hxP9kaMf/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9kaMb/XWHE/3+C0P/+/v//4eL0/6Kk3f+wsuL//Pz+/+zs+P9qbsj/YWXF/2Roxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Roxv9dYsT/e37P/2hsyP9aXsP/S0+9/6Om3f//////jZDV/1pew/9lacf/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/ZGjG/19jxf9cYMP/W1/D/2Roxv/Ky+v//////4yP1f9aX8P/ZWnH/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Rnxv9eYsT/g4bS/7/A5//y8vr//////9fY8P9kaMb/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Vpx/9bX8P/pafe////////////4eL0/6Wn3v9masf/YGTF/2Roxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Roxv9hZcX/aGzI//Hy+v/y8/r/gIPR/19jxP9YXcL/YWXF/2Vpx/9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9kaMb/YGTF/2xwyf/8/P7/19jx/05Tvv9WW8H/ZWnH/2hsyP9fY8T/ZGjG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Rox/9cYMP/xcfq///////Nzu3/p6nf/+Lj9P/k5fX/aGzI/2Jmxv9kaMb/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9kaMb/YWXF/2Vpx/+3ueX/8/P7///////t7vn/sbPi/2dryP9iZsb/Y2fG/2Nnxv9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Roxv9iZsb/WF3C/2Jmxv9qbsj/YWXF/1dcwv9hZcX/Y2fG/2Nnxv9jZ8b/Y2fG/2Rox/9jZ8b/Y2fG/2Nnxv9jZ8b/Y2fG/2Vpx/9iZsb/YGTF/2Nnxv9lacf/Y2fG/2Nnxv9jZ8b/Y2fG/2Rox/9kaMb/ZWnH/2Rox/9kaMf/ZGjH/2Rox/9kaMf/ZWnH/2Vpx/9lacf/ZGjH/2Rox/9kaMf/ZGjH/2Vpx/9kaMb/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" rel="icon" type="image/x-icon" />
+
   <!-- Load the API library -->
   <script src="./lib/index.js"></script>
 
@@ -158,7 +160,7 @@
           </div>
 
           <div>
-            <h3>Authorize</h3>
+            <h3>Authorize <small>authorize()</small></h3>
 
             <button type="button" class="btn btn-primary submit" onClick="authorize(this)" id="authorizeButton">Authorize</button>
             <p id="authorizeArea" class="result-area"></p>
@@ -172,7 +174,7 @@
 
           </div>
 
-          <h3>Am I Authorized?</h3>
+          <h3>Am I Authorized? <small>isAuth()</small></h3>
 
           <button type="button" class="btn btn-primary submit" onClick="isAuthorized(this)">Am I Authorized?</button>
           <p id="isAuthorizedArea" class="result-area"></p>
@@ -184,7 +186,7 @@
             }
           </script>
 
-          <h3>Deauthorize</h3>
+          <h3>Deauthorize <small>deauthorize()</small></h3>
 
           <button type="button" class="btn btn-primary submit" onClick="deauthorize(this)">Deauthorize</button>
           <p id="deauthorizeArea" class="result-area"></p>
@@ -198,7 +200,7 @@
         </div>
 
         <div class="tab-pane" id="dns">
-          <h3>List Names</h3>
+          <h3>List Names <small>listNames()</small></h3>
           <button type="button" class="btn btn-primary submit" onClick="getNames(this)">List Names</button>
           <p id="namesArea" class="result-area"></p>
           <script class="source">
@@ -209,7 +211,7 @@
             }
           </script>
 
-          <h3>Create Name</h3>
+          <h3>Create Name <small>createName(name)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" class="form-control" id="createNameBox" placeholder="Name"/>
           </div>
@@ -225,7 +227,7 @@
             }
           </script>
 
-          <h3>Delete Name</h3>
+          <h3>Delete Name <small>deleteName(name)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" class="form-control" id="deleteNameBox" placeholder="Name"/>
           </div>
@@ -242,7 +244,7 @@
             }
           </script>
 
-          <h3>List Services For Name</h3>
+          <h3>List Services For Name <small>listServices(name)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="listServicesBox" placeholder="Name"/>
           </div>
@@ -258,7 +260,7 @@
             }
           </script>
 
-          <h3>Create Service For Name</h3>
+          <h3>Create Service For Name <small>createServiceForName(obj)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="createServiceForNameBoxName" placeholder="Name"/>
           </div>
@@ -285,7 +287,7 @@
             }
           </script>
 
-          <h3>Create Name and Service</h3>
+          <h3>Create Name and Service <small>createServiceAndName(obj)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="createServiceAndNameBoxName" placeholder="Name"/>
           </div>
@@ -312,7 +314,7 @@
             }
           </script>
 
-          <h3>Delete Service For Name</h3>
+          <h3>Delete Service For Name <small>deleteService(service, name)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="deleteServiceForNameBoxName" placeholder="Name"/>
           </div>
@@ -333,7 +335,7 @@
           </script>
 
           <h3>Get Service Directory
-            <small>getServiceDir(serviceName, name)</small>
+            <small>getServiceDir(service, name)</small>
           </h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getServiceDirectoryServiceName" placeholder="Service Name"/>
@@ -354,7 +356,7 @@
             }
           </script>
 
-          <h3>Get Service File</h3>
+          <h3>Get Service File <small>getFile(service, name, filePath, options = {})</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getServiceFileServiceName" placeholder="Service Name"/>
           </div>
@@ -390,7 +392,7 @@
           </script>
         </div>
         <div class="tab-pane" id="nfs">
-          <h3>Create Directory</h3>
+          <h3>Create Directory <small>createDirectory(dir, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="createDirectory" placeholder="Directory"/>
           </div>
@@ -415,7 +417,7 @@
             }
           </script>
 
-          <h3>Get Directory</h3>
+          <h3>Get Directory <small>getDirectory(dir, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getDirectory" placeholder="Directory"/>
           </div>
@@ -431,7 +433,7 @@
             }
           </script>
 
-          <h3>Delete Directory</h3>
+          <h3>Delete Directory <small>deleteDirectory(dir, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="deleteDirectory" placeholder="Directory"/>
           </div>
@@ -447,7 +449,7 @@
             }
           </script>
 
-          <h3>Create File</h3>
+          <h3>Create File <small>createFile(filePath, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="createFile" placeholder="File name"/>
           </div>
@@ -467,7 +469,7 @@
             }
           </script>
 
-          <h3>Update File</h3>
+          <h3>Update File <small>updateFile(filePath, content, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="updateFile" placeholder="File name"/>
           </div>
@@ -493,7 +495,7 @@
             }
           </script>
 
-          <h3>Get File</h3>
+          <h3>Get File <small>getFile(filePath, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="getFile" placeholder="File Path"/>
           </div>
@@ -520,7 +522,7 @@
             }
           </script>
 
-          <h3>Delete File</h3>
+          <h3>Delete File <small>deleteFile(filePath, options)</small></h3>
           <div class="form-group">
             <input type="text" class="form-control" class="form-control" id="deleteFile" placeholder="File Path"/>
           </div>
@@ -540,6 +542,15 @@
       </div>
     </div>
   </div>
+
+  <div class="panel">
+    <div class="panel-body">
+      Created by Ephi Blanshey<br />
+      Email: hello@blanshey.com
+    </div>
+  </div>
+
+
 
 </div>
 
