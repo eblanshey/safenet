@@ -8,6 +8,10 @@ SafeNet JS is a low-level library for communicating with the Safe Launcher. It i
 
 Start the [SAFE launcher](https://maidsafe.readme.io/docs/getting-started) and then [click here](http://playground.blanshey.safenet/) for the playground on the SAFE network. Or, simply follow installation for development detailed below (npm install and start), then run the `playground.html` file in your browser. It includes the ability to view the source code for each function.
 
+#### Security Warning
+
+Running SAFE apps in the browser is currently not secure and no privacy or security should be expected in its current state. It is currently possible to mix safenet and conventional internet requests, thus exposing yourself to many cross-site vulnerabilities. This demo is useful for learning about the SAFE network and the API, and browser apps can be created with the intention of running them when more secure browser solutions are created.
+
 ## Installation
 
 If using node or a browser compiler such as Webpack, use `npm install safenet`. If you simply want to include the library in the browser, add the following script tag tag to the header of your html file:
