@@ -4,19 +4,23 @@
 
 SafeNet JS is a low-level library for communicating with the Safe Launcher. It is written in pure javascript and can be used in a node and browser environment. The goal is to provide 1-to-1 compatibility with the launcher's API.
 
-## Demo
+## [Demo](http://playground.blanshey.safenet/)
 
-Start the SAFE launcher and then click here for the playground on the SAFE network. Or, simply follow installation for development detailed below, then run the `playground.html` file in your browser. It includes the ability to view the source code for each function.
+Start the [SAFE launcher](https://maidsafe.readme.io/docs/getting-started) and then [click here](http://playground.blanshey.safenet/) for the playground on the SAFE network. Or, simply follow installation for development detailed below (npm install and start), then run the `playground.html` file in your browser. It includes the ability to view the source code for each function.
 
 ## Installation
 
-If using node or a browser compiler such as Webpack, use `npm install safenet`. If you simply want to include the library in the browser, a safe network link will be provided later that you can simply include using a `<script>` tag.
+If using node or a browser compiler such as Webpack, use `npm install safenet`. If you simply want to include the library in the browser, add the following script tag tag to the header of your html file:
+
+```html
+<script src="http://playground.blanshey.safenet/lib/index.js"></script>
+```
 
 For development, clone this repo, run `npm install`, then `npm start`.
 
 ## Usage
 
-All methods return promises. The return values stated for each method refers to the resolved value.
+All methods return promises. The return values stated for each method refers to the resolved value. You may refer to the demo app for example usage of each method.
 
 #### new SafeApp(app, permissions, config)
 
@@ -201,4 +205,9 @@ Deletes the file. `options` must contain `isPathShared`.
 
 **Returns:** `undefined`
 
+## To Do
 
+* Unit tests
+* Missing NFS calls ([as listed in the safe launcher](https://github.com/maidsafe/safe_launcher/blob/master/app/server/routes/version_0_4.js))
+* Bugfixes:
+	* Missing headers when fetching files
