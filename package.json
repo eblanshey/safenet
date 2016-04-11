@@ -1,6 +1,6 @@
 {
   "name": "safenet",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Low-level javascript API wrapper for communicating with the SAFE Network launcher",
   "main": "lib/index.js",
   "scripts": {
@@ -31,5 +31,13 @@
     "es6-promise": "^3.1.2",
     "isomorphic-fetch": "^2.2.1",
     "tweetnacl": "^0.14.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eblanshey/safenet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eblanshey/safenet/issues"
+  },
+  "homepage": "https://github.com/eblanshey/safenet#readme"
 }
