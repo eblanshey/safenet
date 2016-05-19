@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "npm run build",
     "start": "webpack ./src/index.js ./lib/index.js --progress --colors --watch",
-    "build": "webpack ./src/index.js ./lib/index.js -p",
+    "build": "webpack ./src/index.js ./lib/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
